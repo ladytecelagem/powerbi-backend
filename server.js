@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
 const app = express();
 app.use(cors());
@@ -16,11 +17,18 @@ const CONFIG = {
   groupId:       process.env.GROUP_ID       || 'a44afaa1-3b9e-4ea3-a33f-2ef1777ea80c',
   reportId:      process.env.REPORT_ID      || 'bad25a70-e239-4b00-8933-b1fa530185b4',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
+  smtpHost:      process.env.SMTP_HOST      || '',
+  smtpPort:      parseInt(process.env.SMTP_PORT || '587'),
+  smtpUser:      process.env.SMTP_USER      || '',
+  smtpPass:      process.env.SMTP_PASS      || '',
+  emailTo:       process.env.EMAIL_TO       || 'tecidos@ladytex.com.br',
+  emailFrom:     process.env.EMAIL_FROM     || '',
 };
 
 const users = {};
 const sessions = {};
 
+// --- POWER BI ---
 async function getPbiToken() {
   const r = await fetch('https://login.microsoftonline.com/' + CONFIG.tenantId + '/oauth2/v2.0/token', {
     method: 'POST',
@@ -32,33 +40,31 @@ async function getPbiToken() {
   return d.access_token;
 }
 
+// --- SESSAO ---
 function createSession(email) {
   const token = crypto.randomBytes(32).toString('hex');
   sessions[token] = email;
   return token;
 }
-
 function getSessionUser(token) {
   const email = sessions[token];
   return email ? users[email] : null;
 }
-
 function requireAuth(req, res, next) {
   const token = req.headers['x-session-token'];
   const user = getSessionUser(token);
   if (!user) return res.status(401).json({ error: 'Nao autenticado' });
-  if (user.status !== 'approved') return res.status(403).json({ error: 'Acesso pendente de aprovacao' });
+  if (user.status !== 'approved') return res.status(403).json({ error: 'Acesso pendente' });
   req.user = user;
   next();
 }
-
 function requireAdmin(req, res, next) {
   const token = req.headers['x-session-token'];
-  const email = sessions[token];
-  if (email !== '__admin__') return res.status(403).json({ error: 'Acesso negado' });
+  if (sessions[token] !== '__admin__') return res.status(403).json({ error: 'Acesso negado' });
   next();
 }
 
+// --- AUTH ---
 app.post('/auth/register', async (req, res) => {
   const { name, email, company, password } = req.body || {};
   if (!name || !email || !password) return res.status(400).json({ error: 'Nome, email e senha sao obrigatorios' });
@@ -94,6 +100,7 @@ app.get('/auth/me', (req, res) => {
   res.json({ name: user.name, email: user.email, status: user.status });
 });
 
+// --- ADMIN ---
 app.post('/admin/login', async (req, res) => {
   const { password } = req.body || {};
   if (password !== CONFIG.adminPassword) return res.status(401).json({ error: 'Senha incorreta' });
@@ -102,10 +109,7 @@ app.post('/admin/login', async (req, res) => {
 });
 
 app.get('/admin/users', requireAdmin, (req, res) => {
-  const list = Object.values(users).map(u => ({
-    name: u.name, email: u.email, company: u.company, status: u.status, createdAt: u.createdAt
-  }));
-  res.json(list);
+  res.json(Object.values(users).map(u => ({ name: u.name, email: u.email, company: u.company, status: u.status, createdAt: u.createdAt })));
 });
 
 app.post('/admin/approve/:email', requireAdmin, (req, res) => {
@@ -124,6 +128,7 @@ app.post('/admin/reject/:email', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+// --- EMBED TOKEN ---
 app.get('/getEmbedToken', requireAuth, async (req, res) => {
   try {
     const t = await getPbiToken();
@@ -136,9 +141,94 @@ app.get('/getEmbedToken', requireAuth, async (req, res) => {
     const embed = await rEmbed.json();
     if (!rEmbed.ok) throw new Error('GenerateToken ' + rEmbed.status + ': ' + JSON.stringify(embed));
     res.json({ accessToken: embed.token, embedUrl: meta.embedUrl, reportId: CONFIG.reportId, expiration: embed.expiration });
+  } catch (err) { console.error('[PBI]', err.message); res.status(500).json({ error: err.message }); }
+});
+
+// --- ENVIO DE LISTA DE PECAS ---
+app.post('/send-list', requireAuth, async (req, res) => {
+  const { pecas, obs } = req.body || {};
+  const user = req.user;
+  if (!pecas || !pecas.length) return res.status(400).json({ error: 'Nenhuma peca informada' });
+
+  // Monta o corpo do e-mail
+  const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  const listaPecas = pecas.map((p, i) => (i + 1) + '. ' + p).join('\n');
+  const observacoes = obs ? '\n\nObservacoes:\n' + obs : '';
+  const textoEmail = [
+    'SOLICITACAO DE DISPONIBILIDADE DE PECAS',
+    '========================================',
+    '',
+    'Data/Hora: ' + dataHora,
+    'Solicitante: ' + user.name + ' (' + user.email + ')',
+    (user.company ? 'Empresa: ' + user.company : ''),
+    '',
+    'PECAS SOLICITADAS:',
+    '------------------',
+    listaPecas,
+    observacoes,
+    '',
+    '========================================',
+    'Mensagem enviada automaticamente pelo Dashboard LADY BI'
+  ].filter(function(l){ return l !== undefined; }).join('\n');
+
+  const htmlEmail = [
+    '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">',
+    '<div style="background:#1d1d1f;padding:20px 24px;border-radius:10px 10px 0 0">',
+    '<h2 style="color:white;margin:0;font-size:18px">📋 Solicitacao de Disponibilidade de Pecas</h2>',
+    '<p style="color:#aaa;margin:6px 0 0;font-size:13px">Dashboard Comercial — LADY BI</p>',
+    '</div>',
+    '<div style="background:#f8f8f8;padding:20px 24px;border:1px solid #eee">',
+    '<p style="margin:0 0 4px"><strong>Data/Hora:</strong> ' + dataHora + '</p>',
+    '<p style="margin:0 0 4px"><strong>Solicitante:</strong> ' + user.name + '</p>',
+    '<p style="margin:0 0 4px"><strong>Email:</strong> ' + user.email + '</p>',
+    (user.company ? '<p style="margin:0"><strong>Empresa:</strong> ' + user.company + '</p>' : ''),
+    '</div>',
+    '<div style="background:white;padding:20px 24px;border:1px solid #eee;border-top:none">',
+    '<h3 style="margin:0 0 14px;font-size:15px;color:#1d1d1f">Pecas Solicitadas (' + pecas.length + ')</h3>',
+    '<table style="width:100%;border-collapse:collapse">',
+    pecas.map(function(p, i) {
+      var bg = i % 2 === 0 ? '#f5f5f7' : 'white';
+      return '<tr style="background:' + bg + '"><td style="padding:8px 12px;font-weight:600;font-family:monospace;font-size:14px">' + (i+1) + '.</td><td style="padding:8px 12px;font-family:monospace;font-size:14px">' + p + '</td></tr>';
+    }).join(''),
+    '</table>',
+    (obs ? '<div style="margin-top:16px;padding:12px 16px;background:#fff8e6;border-radius:8px;border:1px solid #ffe0a0"><strong>Observacoes:</strong><br>' + obs.replace(/\n/g,'<br>') + '</div>' : ''),
+    '</div>',
+    '<div style="background:#f0f0f0;padding:12px 24px;border-radius:0 0 10px 10px;font-size:11px;color:#888;text-align:center">',
+    'Mensagem enviada automaticamente pelo Dashboard Comercial LADY BI',
+    '</div>',
+    '</div>'
+  ].join('');
+
+  try {
+    if (!CONFIG.smtpHost || !CONFIG.smtpUser || !CONFIG.smtpPass) {
+      // Sem SMTP configurado: loga e retorna sucesso simulado em dev
+      console.log('[MAIL] SMTP nao configurado. Simulando envio.');
+      console.log('[MAIL] Para:', CONFIG.emailTo);
+      console.log('[MAIL] Pecas:', pecas.join(', '));
+      return res.json({ ok: true, message: 'Lista enviada! (modo simulacao - configure SMTP_HOST, SMTP_USER, SMTP_PASS)' });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: CONFIG.smtpHost,
+      port: CONFIG.smtpPort,
+      secure: CONFIG.smtpPort === 465,
+      auth: { user: CONFIG.smtpUser, pass: CONFIG.smtpPass },
+    });
+
+    await transporter.sendMail({
+      from: '"LADY BI Dashboard" <' + (CONFIG.emailFrom || CONFIG.smtpUser) + '>',
+      to: CONFIG.emailTo,
+      replyTo: user.email,
+      subject: '[LADY BI] Solicitacao de Pecas — ' + user.name + ' (' + pecas.length + ' itens)',
+      text: textoEmail,
+      html: htmlEmail,
+    });
+
+    console.log('[MAIL] Enviado para', CONFIG.emailTo, '— pecas:', pecas.length);
+    res.json({ ok: true, message: 'Lista enviada com sucesso para a expedicao!' });
   } catch (err) {
-    console.error('[PBI]', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[MAIL] Erro:', err.message);
+    res.status(500).json({ error: 'Erro ao enviar email: ' + err.message });
   }
 });
 
