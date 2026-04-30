@@ -2,30 +2,29 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
 const CONFIG = {
-  tenantId: process.env.TENANT_ID || '',
-  clientId: process.env.CLIENT_ID || '',
-  clientSecret: process.env.CLIENT_SECRET || '',
-  groupId: process.env.GROUP_ID || 'a44afaa1-3b9e-4ea3-a33f-2ef1777ea80c',
-  reportId: process.env.REPORT_ID || 'bad25a70-e239-4b00-8933-b1fa530185b4',
+  tenantId:      process.env.TENANT_ID      || '',
+  clientId:      process.env.CLIENT_ID      || '',
+  clientSecret:  process.env.CLIENT_SECRET  || '',
+  groupId:       process.env.GROUP_ID       || 'a44afaa1-3b9e-4ea3-a33f-2ef1777ea80c',
+  reportId:      process.env.REPORT_ID      || 'bad25a70-e239-4b00-8933-b1fa530185b4',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
-  adminEmail: process.env.ADMIN_EMAIL || '',
 };
 
-// Banco em memoria (persiste enquanto o container rodar)
-// Para producao real, usar um banco externo (ex: Railway PostgreSQL)
-const users = {}; // email -> { name, email, company, status: 'pending'|'approved'|'rejected', token, createdAt }
-const sessions = {}; // token -> email
+// --- ARMAZENAMENTO EM MEMORIA ---
+// usuarios: { email -> { name, email, company, passwordHash, status: 'pending'|'approved'|'rejected', createdAt } }
+const users = {};
+// sessoes: { token -> email }
+const sessions = {};
 
-function generateToken() {
-  return crypto.randomBytes(32).toString('hex');
-}
-
+// --- POWER BI ---
 async function getPbiToken() {
   const r = await fetch('https://login.microsoftonline.com/' + CONFIG.tenantId + '/oauth2/v2.0/token', {
     method: 'POST',
@@ -33,93 +32,110 @@ async function getPbiToken() {
     body: new URLSearchParams({ grant_type: 'client_credentials', client_id: CONFIG.clientId, client_secret: CONFIG.clientSecret, scope: 'https://analysis.windows.net/powerbi/api/.default' }).toString()
   });
   const d = await r.json();
-  if (!r.ok) throw new Error('Azure AD ' + r.status + ': ' + JSON.stringify(d));
+  if (!r.ok) throw new Error('PBI token: ' + JSON.stringify(d));
   return d.access_token;
 }
 
-// ——— AUTENTICACAO ———————————————————————
+// --- SESSAO ---
+function createSession(email) {
+  const token = crypto.randomBytes(32).toString('hex');
+  sessions[token] = email;
+  return token;
+}
+function getSessionUser(token) {
+  const email = sessions[token];
+  return email ? users[email] : null;
+}
+function requireAuth(req, res, next) {
+  const token = req.headers['x-session-token'];
+  const user = getSessionUser(token);
+  if (!user) return res.status(401).json({ error: 'Nao autenticado' });
+  if (user.status !== 'approved') return res.status(403).json({ error: 'Acesso pendente de aprovacao' });
+  req.user = user;
+  next();
+}
+function requireAdmin(req, res, next) {
+  const token = req.headers['x-session-token'];
+  const email = sessions[token];
+  if (email !== '__admin__') return res.status(403).json({ error: 'Acesso negado' });
+  next();
+}
 
-// Cadastro de novo usuario
-app.post('/auth/register', (req, res) => {
-  const { name, email, company } = req.body;
-  if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatorios' });
-  const key = email.toLowerCase();
-  if (users[key]) return res.status(409).json({ error: 'Email ja cadastrado' });
-  users[key] = { name, email: key, company: company || '', status: 'pending', createdAt: new Date().toISOString() };
-  console.log('[AUTH] Novo cadastro:', key);
-  res.json({ ok: true, message: 'Cadastro enviado! Aguarde aprovacao do administrador.' });
+// --- ROTAS AUTH ---
+
+// Cadastro
+app.post('/auth/register', async (req, res) => {
+  const { name, email, company, password } = req.body || {};
+  if (!name || !email || !password) return res.status(400).json({ error: 'Nome, email e senha sao obrigatorios' });
+  if (users[email]) return res.status(409).json({ error: 'Email ja cadastrado' });
+  const passwordHash = await bcrypt.hash(password, 10);
+  users[email] = { name, email, company: company || '', passwordHash, status: 'pending', createdAt: new Date().toISOString() };
+  console.log('[AUTH] Novo cadastro pendente:', email);
+  res.json({ ok: true, message: 'Cadastro realizado! Aguarde aprovacao do administrador.' });
 });
 
-// Login
-app.post('/auth/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email e senha obrigatorios' });
-  const key = email.toLowerCase();
-  const user = users[key];
-  if (!user) return res.status(401).json({ error: 'Email nao encontrado' });
-  if (user.password !== password) return res.status(401).json({ error: 'Senha incorreta' });
-  if (user.status === 'pending') return res.status(403).json({ error: 'Cadastro aguardando aprovacao' });
-  if (user.status === 'rejected') return res.status(403).json({ error: 'Acesso negado' });
-  const token = generateToken();
-  sessions[token] = key;
+// Login usuario
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body || {};
+  const user = users[email];
+  if (!user) return res.status(401).json({ error: 'Email ou senha incorretos' });
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) return res.status(401).json({ error: 'Email ou senha incorretos' });
+  if (user.status === 'pending') return res.status(403).json({ error: 'pending', message: 'Seu acesso ainda nao foi aprovado. Aguarde.' });
+  if (user.status === 'rejected') return res.status(403).json({ error: 'rejected', message: 'Seu acesso foi negado pelo administrador.' });
+  const token = createSession(email);
   res.json({ ok: true, token, name: user.name });
 });
 
 // Logout
 app.post('/auth/logout', (req, res) => {
-  const token = req.headers['x-auth-token'];
+  const token = req.headers['x-session-token'];
   if (token) delete sessions[token];
   res.json({ ok: true });
 });
 
-// ——— ADMIN ———————————————————————————
-
-function adminAuth(req, res, next) {
-  const pwd = req.headers['x-admin-password'];
-  if (pwd !== CONFIG.adminPassword) return res.status(401).json({ error: 'Senha admin incorreta' });
-  next();
-}
-
-// Lista todos os usuarios
-app.get('/admin/users', adminAuth, (req, res) => {
-  res.json(Object.values(users).map(u => ({ name: u.name, email: u.email, company: u.company, status: u.status, createdAt: u.createdAt })));
+// Status da sessao
+app.get('/auth/me', (req, res) => {
+  const token = req.headers['x-session-token'];
+  const user = getSessionUser(token);
+  if (!user) return res.status(401).json({ error: 'Nao autenticado' });
+  res.json({ name: user.name, email: user.email, status: user.status });
 });
 
-// Aprova usuario e define senha
-app.post('/admin/approve', adminAuth, (req, res) => {
-  const { email, password } = req.body;
-  const key = email.toLowerCase();
-  if (!users[key]) return res.status(404).json({ error: 'Usuario nao encontrado' });
-  users[key].status = 'approved';
-  users[key].password = password || generateToken().substring(0, 8);
-  console.log('[ADMIN] Aprovado:', key, '| Senha:', users[key].password);
-  res.json({ ok: true, password: users[key].password, message: 'Usuario aprovado. Envie a senha para o usuario.' });
+// --- ROTAS ADMIN ---
+
+// Login admin
+app.post('/admin/login', async (req, res) => {
+  const { password } = req.body || {};
+  if (password !== CONFIG.adminPassword) return res.status(401).json({ error: 'Senha incorreta' });
+  const token = createSession('__admin__');
+  res.json({ ok: true, token });
 });
 
-// Rejeita usuario
-app.post('/admin/reject', adminAuth, (req, res) => {
-  const { email } = req.body;
-  const key = email.toLowerCase();
-  if (!users[key]) return res.status(404).json({ error: 'Usuario nao encontrado' });
-  users[key].status = 'rejected';
+// Listar usuarios pendentes e todos
+app.get('/admin/users', requireAdmin, (req, res) => {
+  const list = Object.values(users).map(u => ({
+    name: u.name, email: u.email, company: u.company, status: u.status, createdAt: u.createdAt
+  }));
+  res.json(list);
+});
+
+// Aprovar usuario
+app.post('/admin/approve/:email', requireAdmin, (req, res) => {
+  const user = users[req.params.email];
+  if (!user) return res.status(404).json({ error: 'Usuario nao encontrado' });
+  user.status = 'approved';
+  console.log('[ADMIN] Aprovado:', req.params.email);
+  
+app.post('/admin/reject/:email', requireAdmin, (req, res) => {
+  const user = users[req.params.email];
+  if (!user) return res.status(404).json({ error: 'Usuario nao encontrado' });
+  user.status = 'rejected';
+  console.log('[ADMIN] Rejeitado:', req.params.email);
   res.json({ ok: true });
 });
 
-// Remove usuario
-app.delete('/admin/user', adminAuth, (req, res) => {
-  const { email } = req.body;
-  const key = email.toLowerCase();
-  delete users[key];
-  res.json({ ok: true });
-// ——— POWER BI (protegido por sessao) ———————
-
-function requireAuth(req, res, next) {
-  const token = req.headers['x-auth-token'];
-  if (!token || !sessions[token]) return res.status(401).json({ error: 'Nao autenticado' });
-  req.userEmail = sessions[token];
-  next();
-}
-
+// --- ROTA PRINCIPAL: EMBED TOKEN (requer autenticacao aprovada) ---
 app.get('/getEmbedToken', requireAuth, async (req, res) => {
   try {
     const t = await getPbiToken();
@@ -136,7 +152,6 @@ app.get('/getEmbedToken', requireAuth, async (req, res) => {
 });
 
 app.get('/health', (req, res) => res.json({ ok: true }));
-app.use(express.static(path.join(__dirname)));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', function() { console.log('OK porta ' + PORT); });
+app.listen(PORT, '0.0.0.0', () => console.log('OK porta ' + PORT));
