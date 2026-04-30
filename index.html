@@ -11,47 +11,41 @@
     body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; }
 
     /* ===== TELA DE AUTH ===== */
-    #auth-screen {
-      flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px;
-    }
-    .auth-card {
-      background: white; border-radius: 20px; padding: 40px;
-      width: 100%; max-width: 420px;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.10);
-    }
+    #auth-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .auth-card { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 12px 48px rgba(0,0,0,0.10); }
     .auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
-    .auth-logo-icon { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#0071e3,#5e5ce6); display:flex; align-items:center; justify-content:center; }
+    .auth-logo-icon { width: 36px; height: 36px; border-radius: 9px; background: #1d1d1f; display:flex; align-items:center; justify-content:center; }
     .auth-logo-icon svg { width:20px; height:20px; fill:white; }
     .auth-logo-text { font-size: 17px; font-weight: 700; color: #1d1d1f; }
     .auth-logo-sub { font-size: 12px; color: #6e6e73; }
     .auth-title { font-size: 22px; font-weight: 700; color: #1d1d1f; margin-bottom: 6px; }
     .auth-subtitle { font-size: 14px; color: #6e6e73; margin-bottom: 24px; }
     .auth-tabs { display: flex; gap: 0; margin-bottom: 24px; border-radius: 10px; background: #f5f5f7; padding: 3px; }
-    .auth-tab { flex: 1; padding: 8px; text-align: center; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 8px; color: #6e6e73; transition: all 0.2s; }
+    .auth-tab { flex: 1; padding: 8px; text-align: center; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 8px; color: #6e6e73; transition: all 0.2s; border: none; background: transparent; }
     .auth-tab.active { background: white; color: #1d1d1f; box-shadow: 0 1px 4px rgba(0,0,0,0.10); }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: #1d1d1f; margin-bottom: 6px; }
     .form-group input { width: 100%; padding: 11px 14px; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; font-size: 15px; outline: none; transition: border-color 0.2s; }
-    .form-group input:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
-    .btn-primary { width: 100%; padding: 12px; background: #0071e3; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
-    .btn-primary:hover { background: #0058b2; }
-    .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+    .form-group input:focus { border-color: #1d1d1f; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+    .btn-primary { width: 100%; padding: 12px; background: #1d1d1f; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .auth-msg { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 13px; display: none; }
-    .auth-msg.error { background: #fff2f2; color: #cc0000; border: 1px solid #ffcccc; display: block; }
+    .auth-msg.error   { background: #fff2f2; color: #cc0000; border: 1px solid #ffcccc; display: block; }
     .auth-msg.success { background: #f0fff4; color: #006600; border: 1px solid #99e6aa; display: block; }
-    .auth-msg.info { background: #f0f6ff; color: #004499; border: 1px solid #aaccff; display: block; }
+    .auth-msg.info    { background: #f0f6ff; color: #004499; border: 1px solid #aaccff; display: block; }
 
     /* ===== TELA DO RELATORIO ===== */
     #app-screen { flex: 1; display: none; flex-direction: column; overflow: hidden; }
     .page-header { height: 52px; flex-shrink: 0; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
     .header-left { display: flex; align-items: center; gap: 10px; }
-    .logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#0071e3,#5e5ce6); display:flex; align-items:center; justify-content:center; }
+    .logo { width: 28px; height: 28px; border-radius: 7px; background: #1d1d1f; display:flex; align-items:center; justify-content:center; }
     .logo svg { width:16px; height:16px; fill:white; }
     .header-title { font-size: 15px; font-weight: 600; color: #1d1d1f; }
     .header-right { display: flex; align-items: center; gap: 12px; }
     .user-name { font-size: 13px; color: #6e6e73; }
-    .btn-logout { padding: 6px 14px; background: transparent; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; font-size: 13px; cursor: pointer; color: #1d1d1f; }
-    .btn-logout:hover { background: #f5f5f7; }
+    .btn-logout { padding: 6px 14px; background: #1d1d1f; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .btn-logout:hover { opacity: 0.8; }
     .status-pill { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; background: white; border: 1px solid rgba(0,0,0,0.08); font-size: 11px; font-weight: 500; color: #6e6e73; }
     .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #8e8e93; }
     .status-pill.live .status-dot { background: #30d158; animation: pulse 2s infinite; }
@@ -63,7 +57,7 @@
     #report-container iframe { border: none !important; width: 100% !important; height: 100% !important; }
     .overlay { position: absolute; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 10; transition: opacity 0.3s; }
     .overlay.hidden { opacity: 0; pointer-events: none; }
-    .spinner { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid rgba(0,113,227,0.15); border-top-color: #0071e3; animation: spin 0.75s linear infinite; }
+    .spinner { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid rgba(0,0,0,0.08); border-top-color: #1d1d1f; animation: spin 0.75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .overlay-text { font-size: 13px; color: #6e6e73; }
   </style>
@@ -78,17 +72,17 @@
         <div><div class="auth-logo-text">LADY BI</div><div class="auth-logo-sub">Dashboard Comercial</div></div>
       </div>
       <div class="auth-tabs">
-        <div class="auth-tab active" onclick="showTab('login')">Entrar</div>
-        <div class="auth-tab" onclick="showTab('register')">Cadastrar</div>
+        <button class="auth-tab active" id="tab-btn-login" onclick="showTab('login')">Entrar</button>
+        <button class="auth-tab" id="tab-btn-register" onclick="showTab('register')">Cadastrar</button>
       </div>
 
       <!-- Login -->
       <div id="tab-login">
         <div class="auth-title">Bem-vindo</div>
         <div class="auth-subtitle">Entre com sua conta para acessar o dashboard</div>
-        <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" /></div>
-        <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="Sua senha" /></div>
-        <button class="btn-primary" onclick="doLogin()">Entrar</button>
+        <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+        <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="Sua senha" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar</button>
         <div class="auth-msg" id="login-msg"></div>
       </div>
 
@@ -99,8 +93,8 @@
         <div class="form-group"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome" /></div>
         <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="seu@email.com" /></div>
         <div class="form-group"><label>Empresa</label><input type="text" id="reg-company" placeholder="Nome da empresa (opcional)" /></div>
-        <div class="form-group"><label>Senha</label><input type="password" id="reg-password" placeholder="Crie uma senha" /></div>
-        <button class="btn-primary" onclick="doRegister()">Solicitar acesso</button>
+        <div class="form-group"><label>Senha</label><input type="password" id="reg-password" placeholder="Crie uma senha" onkeydown="if(event.key==='Enter')doRegister()" /></div>
+        <button class="btn-primary" id="btn-register" onclick="doRegister()">Solicitar acesso</button>
         <div class="auth-msg" id="register-msg"></div>
       </div>
     </div>
@@ -111,7 +105,7 @@
     <header class="page-header">
       <div class="header-left">
         <div class="logo"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z"/></svg></div>
-        <span class="header-title">Dashboard Comercial — LADY BI</span>
+        <span class="header-title">Dashboard Comercial</span>
       </div>
       <div class="header-right">
         <span class="user-name" id="user-name"></span>
@@ -135,59 +129,97 @@
     var sessionToken = localStorage.getItem('session_token');
     var userName = localStorage.getItem('user_name');
 
-    // Tabs
     function showTab(tab) {
-      document.getElementById('tab-login').style.display = tab === 'login' ? '' : 'none';
-      document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
-      document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register')));
+      document.getElementById('tab-login').style.display    = (tab === 'login')    ? '' : 'none';
+      document.getElementById('tab-register').style.display = (tab === 'register') ? '' : 'none';
+      document.getElementById('tab-btn-login').classList.toggle('active',    tab === 'login');
+      document.getElementById('tab-btn-register').classList.toggle('active', tab === 'register');
     }
 
     function showMsg(id, msg, type) {
       var el = document.getElementById(id);
-      el.textContent = msg; el.className = 'auth-msg ' + type;
+      el.textContent = msg;
+      el.className = 'auth-msg ' + type;
     }
 
-    // Login
-    async function doLogin() {
-      var email = document.getElementById('login-email').value.trim();
+    function clearMsg(id) {
+      var el = document.getElementById(id);
+      el.className = 'auth-msg';
+      el.textContent = '';
+    }
+
+    function doLogin() {
+      var email    = document.getElementById('login-email').value.trim();
       var password = document.getElementById('login-password').value;
-      if (!email || !password) return showMsg('login-msg', 'Preencha email e senha', 'error');
-      try {
-        var r = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
-        var d = await r.json();
-        if (!r.ok) return showMsg('login-msg', d.message || d.error, r.status === 403 && d.error === 'pending' ? 'info' : 'error');
-        sessionToken = d.token; userName = d.name;
+      if (!email || !password) { showMsg('login-msg', 'Preencha email e senha', 'error'); return; }
+      var btn = document.getElementById('btn-login');
+      btn.disabled = true; btn.textContent = 'Entrando...';
+      clearMsg('login-msg');
+      fetch(API + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+      })
+      .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+      .then(function(res) {
+        btn.disabled = false; btn.textContent = 'Entrar';
+        if (res.status !== 200) {
+          var msg = res.data.message || res.data.error || 'Erro ao entrar';
+          var type = (res.data.error === 'pending') ? 'info' : 'error';
+          showMsg('login-msg', msg, type);
+          return;
+        }
+        sessionToken = res.data.token;
+        userName = res.data.name;
         localStorage.setItem('session_token', sessionToken);
         localStorage.setItem('user_name', userName);
         showApp();
-      } catch(e) { showMsg('login-msg', 'Erro de conexao', 'error'); }
+      })
+      .catch(function() {
+        btn.disabled = false; btn.textContent = 'Entrar';
+        showMsg('login-msg', 'Erro de conexao. Tente novamente.', 'error');
+      });
     }
 
-    // Cadastro
-    async function doRegister() {
-      var name = document.getElementById('reg-name').value.trim();
-      var email = document.getElementById('reg-email').value.trim();
-      var company = document.getElementById('reg-company').value.trim();
+    function doRegister() {
+      var name     = document.getElementById('reg-name').value.trim();
+      var email    = document.getElementById('reg-email').value.trim();
+      var company  = document.getElementById('reg-company').value.trim();
       var password = document.getElementById('reg-password').value;
-      if (!name || !email || !password) return showMsg('register-msg', 'Preencha nome, email e senha', 'error');
-      try {
-        var r = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, company, password }) });
-        var d = await r.json();
-        if (!r.ok) return showMsg('register-msg', d.error, 'error');
-        showMsg('register-msg', d.message, 'success');
-        document.getElementById('reg-name').value = ''; document.getElementById('reg-email').value = ''; document.getElementById('reg-password').value = '';
-      } catch(e) { showMsg('register-msg', 'Erro de conexao', 'error'); }
+      if (!name || !email || !password) { showMsg('register-msg', 'Preencha nome, email e senha', 'error'); return; }
+      var btn = document.getElementById('btn-register');
+      btn.disabled = true; btn.textContent = 'Enviando...';
+      clearMsg('register-msg');
+      fetch(API + '/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, email: email, company: company, password: password })
+      })
+      .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+      .then(function(res) {
+        btn.disabled = false; btn.textContent = 'Solicitar acesso';
+        if (res.status !== 200) { showMsg('register-msg', res.data.error || 'Erro ao cadastrar', 'error'); return; }
+        showMsg('register-msg', res.data.message || 'Cadastro realizado! Aguarde aprovacao.', 'success');
+        document.getElementById('reg-name').value = '';
+        document.getElementById('reg-email').value = '';
+        document.getElementById('reg-company').value = '';
+        document.getElementById('reg-password').value = '';
+      })
+      .catch(function() {
+        btn.disabled = false; btn.textContent = 'Solicitar acesso';
+        showMsg('register-msg', 'Erro de conexao. Tente novamente.', 'error');
+      });
     }
 
-    // Logout
-    async function doLogout() {
-      await fetch(API + '/auth/logout', { method: 'POST', headers: { 'x-session-token': sessionToken } }).catch(()=>{});
-      localStorage.removeItem('session_token'); localStorage.removeItem('user_name');
-      sessionToken = null; document.getElementById('app-screen').style.display = 'none';
+    function doLogout() {
+      fetch(API + '/auth/logout', { method: 'POST', headers: { 'x-session-token': sessionToken } }).catch(function(){});
+      localStorage.removeItem('session_token');
+      localStorage.removeItem('user_name');
+      sessionToken = null; userName = null;
+      document.getElementById('app-screen').style.display = 'none';
       document.getElementById('auth-screen').style.display = 'flex';
     }
 
-    // Mostra tela do relatorio
     function showApp() {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'flex';
@@ -195,25 +227,32 @@
       loadReport();
     }
 
-    // Carrega o relatorio
-    async function loadReport() {
+    function loadReport() {
       document.getElementById('loading-overlay').classList.remove('hidden');
+      document.getElementById('loading-text').textContent = 'Carregando relatorio...';
       document.getElementById('status-text').textContent = 'Carregando';
       document.getElementById('status-pill').className = 'status-pill';
-      try {
-        var r = await fetch(API + '/getEmbedToken', { headers: { 'x-session-token': sessionToken } });
-        if (r.status === 401) { doLogout(); return; }
-        var data = await r.json();
-        if (data.error) throw new Error(data.error);
+      fetch(API + '/getEmbedToken', { headers: { 'x-session-token': sessionToken } })
+      .then(function(r) {
+        if (r.status === 401) { doLogout(); return null; }
+        return r.json();
+      })
+      .then(function(data) {
+        if (!data) return;
+        if (data.error) { document.getElementById('loading-text').textContent = 'Erro: ' + data.error; return; }
         var models = window['powerbi-client'] && window['powerbi-client'].models;
+        if (!models) { document.getElementById('loading-text').textContent = 'Erro: powerbi-client nao carregado'; return; }
         var pbi = new window['powerbi-client'].service.Service(
           window['powerbi-client'].factories.hpmFactory,
           window['powerbi-client'].factories.wpmpFactory,
+          window['powerbi-client'].factories.routerFactory
+        );
         var container = document.getElementById('report-container');
         pbi.reset(container);
         var report = pbi.embed(container, {
-          type: 'report', tokenType: models.TokenType.Embed,
-          accessToken: data.accessToken, embedUrl: data.embedUrl, id: data.reportId,
+          type: 'report',
+          embedUrl: data.embedUrl,
+          id: data.reportId,
           settings: { navContentPaneEnabled: true, filterPaneEnabled: false, background: models.BackgroundType.Transparent }
         });
         report.on('loaded', function() {
@@ -222,18 +261,23 @@
           document.getElementById('status-pill').className = 'status-pill live';
         });
         report.on('error', function(e) {
-          document.getElementById('loading-text').textContent = 'Erro ao carregar: ' + (e.detail && e.detail.message || '');
+          document.getElementById('loading-text').textContent = 'Erro: ' + (e.detail && e.detail.message || JSON.stringify(e.detail));
         });
-      } catch(e) {
-        document.getElementById('loading-text').textContent = 'Erro: ' + e.message;
-      }
+      })
+      .catch(function(e) {
+        document.getElementById('loading-text').textContent = 'Erro de conexao: ' + e.message;
+      });
     }
 
-    // Inicializa
+    // Verifica sessao salva ao carregar
     if (sessionToken) {
       fetch(API + '/auth/me', { headers: { 'x-session-token': sessionToken } })
-        .then(r => r.json()).then(d => { if (d.status === 'approved') { showApp(); } else { localStorage.clear(); } })
-        .catch(() => { localStorage.clear(); });
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.status === 'approved') { showApp(); }
+        else { localStorage.clear(); }
+      })
+      .catch(function() { localStorage.clear(); });
     }
   </script>
 </body>
