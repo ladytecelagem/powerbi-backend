@@ -3,489 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Comercial</title>
-
-  <!-- Power BI Client (biblioteca oficial via CDN) -->
+  <title>Dashboard Comercial - LADY BI</title>
   <script src="https://cdn.jsdelivr.net/npm/powerbi-client@2.23.1/dist/powerbi.min.js"></script>
-
   <style>
-    /* ── Reset & Base ─────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:          #f5f5f7;
-      --surface:     #ffffff;
-      --border:      rgba(0,0,0,0.08);
-      --shadow-sm:   0 2px 8px rgba(0,0,0,0.06);
-      --shadow-lg:   0 12px 48px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
-      --accent:      #0071e3;
-      --accent-dark: #0058b2;
-      --text-primary:   #1d1d1f;
-      --text-secondary: #6e6e73;
-      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-              "Helvetica Neue", Arial, sans-serif;
-      --radius-card: 20px;
-      --radius-inner: 14px;
-      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      font-family: var(--font);
-      color: var(--text-primary);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── Layout ───────────────────────────────────────────── */
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 24px 20px 40px;
-    }
-
-    /* ── Header ───────────────────────────────────────────── */
-    .header {
-      max-width: 1180px;
-      width: 100%;
-      margin: 0 auto 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .header-eyebrow {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    .header-title {
-      font-size: clamp(22px, 4vw, 30px);
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      color: var(--text-primary);
-      line-height: 1.15;
-    }
-
-    .header-subtitle {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-      font-weight: 400;
-    }
-
-    /* Status pill */
-    .status-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 100px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      transition: var(--transition);
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #8e8e93;
-      transition: background 0.3s;
-    }
-
-    .status-pill.live .status-dot {
-      background: #30d158;
-      box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.25);
-      animation: pulse 2s infinite;
-    }
-
-    .status-pill.live { color: var(--text-primary); }
-
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(48,209,88,0.25); }
-      50%       { box-shadow: 0 0 0 6px rgba(48,209,88,0.10); }
-    }
-
-    /* ── Card container ───────────────────────────────────── */
-    .card {
-      max-width: 1180px;
-      width: 100%;
-      margin: 0 auto;
-      flex: 1;
-      background: var(--surface);
-      border-radius: var(--radius-card);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      /* Card starts hidden; fades in after embed loads */
-      opacity: 0;
-      transform: translateY(12px);
-      transition: opacity var(--transition), transform var(--transition);
-    }
-
-    .card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Subtle top accent line */
-    .card::before {
-      content: '';
-      position: absolute;
-      inset: 0 0 auto;
-      height: 1px;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(0,113,227,0.3) 30%,
-        rgba(0,113,227,0.5) 50%,
-        rgba(0,113,227,0.3) 70%,
-        transparent 100%);
-    }
-
-    /* ── Loading overlay ──────────────────────────────────── */
-    .loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      z-index: 10;
-      border-radius: var(--radius-card);
-      transition: opacity 0.4s ease;
-    }
-
-    .loading-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* Spinner */
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 2.5px solid rgba(0,113,227,0.15);
-      border-top-color: var(--accent);
-      animation: spin 0.75s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      letter-spacing: -0.01em;
-    }
-
-    /* ── Error state ──────────────────────────────────────── */
-    .error-overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--surface);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      z-index: 11;
-      border-radius: var(--radius-card);
-      padding: 32px;
-    }
-
-    .error-overlay.visible { display: flex; }
-
-    .error-icon {
-      font-size: 36px;
-      line-height: 1;
-    }
-
-    .error-title {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text-primary);
-      text-align: center;
-    }
-
-    .error-message {
-      font-size: 13px;
-      color: var(--text-secondary);
-      text-align: center;
-      max-width: 380px;
-      line-height: 1.55;
-    }
-
-    .retry-btn {
-      margin-top: 4px;
-      padding: 10px 24px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 100px;
-      font-family: var(--font);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-    }
-
-    .retry-btn:hover  { background: var(--accent-dark); transform: scale(1.02); }
-    .retry-btn:active { transform: scale(0.98); }
-
-    /* ── Power BI iframe area ─────────────────────────────── */
-    #report-container {
-      flex: 1;
-      min-height: 600px;
-      width: 100%;
-      /* powerbi-client injeta um iframe aqui */
-    }
-
-    #report-container iframe {
-      border: none !important;
-      border-radius: 0 0 var(--radius-card) var(--radius-card);
-    }
-
-    /* ── Footer ───────────────────────────────────────────── */
-    .footer {
-      max-width: 1180px;
-      width: 100%;
-      margin: 20px auto 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .footer-note {
-      font-size: 11px;
-      color: var(--text-secondary);
-      letter-spacing: 0.01em;
-    }
-
-    .footer-note span {
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    /* ── Responsive ───────────────────────────────────────── */
-    @media (max-width: 640px) {
-      .page { padding: 16px 12px 28px; }
-      .header { flex-direction: column; align-items: flex-start; }
-      .status-pill { align-self: flex-start; }
-      #report-container { min-height: 420px; }
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f7; min-height: 100vh; }
+    .page-header { background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 50; padding: 0 24px; }
+    .header-inner { max-width: 1280px; margin: 0 auto; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-size: 17px; font-weight: 600; }
+    .status-pill { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; background: white; border: 1px solid rgba(0,0,0,0.08); font-size: 12px; font-weight: 500; color: #6e6e73; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #8e8e93; transition: background 0.3s; }
+    .status-pill.live .status-dot { background: #30d158; animation: pulse 2s infinite; }
+    .status-pill.live { color: #1d1d1f; }
+    .status-pill.error .status-dot { background: #ff3b30; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(48,209,88,0.25)} 50%{box-shadow:0 0 0 6px rgba(48,209,88,0.10)} }
+    .page { padding: 24px 20px 40px; min-height: calc(100vh - 56px); display: flex; flex-direction: column; }
+    .card { max-width: 1280px; width: 100%; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 12px 48px rgba(0,0,0,0.10); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
+    .card-header { padding: 20px 24px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .report-title { font-size: 15px; font-weight: 600; }
+    .report-area { flex: 1; position: relative; min-height: 600px; }
+    #report-container { width: 100%; min-height: 600px; }
+    #report-container iframe { border: none !important; }
+    .overlay { position: absolute; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 10; transition: opacity 0.4s; }
+    .overlay.hidden { opacity: 0; pointer-events: none; }
+    .overlay-error { display: none; }
+    .overlay-error.visible { display: flex; }
+    .spinner { width: 36px; height: 36px; border-radius: 50%; border: 2.5px solid rgba(0,113,227,0.15); border-top-color: #0071e3; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #6e6e73; }
+    .error-title { font-size: 18px; font-weight: 600; }
+    .error-msg { font-size: 13px; color: #6e6e73; max-width: 400px; text-align: center; word-break: break-all; }
+    .retry-btn { padding: 10px 24px; background: #0071e3; color: white; border: none; border-radius: 980px; font-size: 15px; cursor: pointer; }
+    .retry-btn:hover { background: #0058b2; }
   </style>
 </head>
 <body>
-<div class="page">
-
-  <!-- ── Header ── -->
-  <header class="header">
-    <div class="header-left">
-      <span class="header-eyebrow">Analytics</span>
-      <h1 class="header-title">Dashboard Comercial</h1>
-      <p class="header-subtitle">Powered by Power BI Embedded</p>
-    </div>
-    <div class="status-pill" id="status-pill">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">Conectando…</span>
+  <header class="page-header">
+    <div class="header-inner">
+      <div class="header-title">Dashboard Comercial — LADY BI</div>
+      <div class="status-pill" id="status-pill">
+        <div class="status-dot"></div>
+        <span id="status-text">Inicializando</span>
+      </div>
     </div>
   </header>
-
-  <!-- ── Card com relatório ── -->
-  <main class="card" id="main-card">
-
-    <!-- Loading overlay -->
-    <div class="loading-overlay" id="loading-overlay">
-      <div class="spinner"></div>
-      <p class="loading-text">Carregando relatório…</p>
+  <main class="page">
+    <div class="card">
+      <div class="card-header">
+        <div class="report-title">Relatorio Comercial</div>
+      </div>
+      <div class="report-area">
+        <div class="overlay" id="loading-overlay">
+          <div class="spinner"></div>
+          <div class="loading-text" id="loading-text">Conectando ao Power BI...</div>
+        </div>
+        <div class="overlay overlay-error" id="error-overlay">
+          <div style="font-size:40px">⚠️</div>
+          <div class="error-title">Falha na conexao</div>
+          <div class="error-msg" id="error-msg"></div>
+          <button class="retry-btn" onclick="init()">Tentar novamente</button>
+        </div>
+        <div id="report-container"></div>
+      </div>
     </div>
-
-    <!-- Error overlay -->
-    <div class="error-overlay" id="error-overlay">
-      <div class="error-icon">⚠️</div>
-      <p class="error-title">Não foi possível carregar o relatório</p>
-      <p class="error-message" id="error-message">Verifique a conexão com o servidor e as credenciais configuradas.</p>
-      <button class="retry-btn" onclick="init()">Tentar novamente</button>
-    </div>
-
-    <!-- Container onde o Power BI injeta o iframe -->
-    <div id="report-container"></div>
   </main>
-
-  <!-- ── Footer ── -->
-  <footer class="footer">
-    <p class="footer-note">
-      Token atualizado automaticamente &bull;
-      Sessão segura &bull;
-      Dados em tempo real
-    </p>
-    <p class="footer-note" id="token-expiry"></p>
-  </footer>
-
-</div>
-
-<script>
-  // ──────────────────────────────────────────────────────────────────────────
-  // CONFIGURAÇÃO
-  // Em produção, ajuste para a URL real do seu servidor backend.
-  // ──────────────────────────────────────────────────────────────────────────
-  const BACKEND_URL = 'https://powerbi-backend-production.up.railway.app/getEmbedToken';
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // REFERÊNCIAS DO DOM
-  // ──────────────────────────────────────────────────────────────────────────
-  const mainCard       = document.getElementById('main-card');
-  const loadingOverlay = document.getElementById('loading-overlay');
-  const errorOverlay   = document.getElementById('error-overlay');
-  const errorMessage   = document.getElementById('error-message');
-  const statusPill     = document.getElementById('status-pill');
-  const statusText     = document.getElementById('status-text');
-  const statusDot      = document.getElementById('status-dot');
-  const tokenExpiry    = document.getElementById('token-expiry');
-  const reportContainer = document.getElementById('report-container');
-
-  // Instância global do relatório (para refresh/reset futuro)
-  let embeddedReport = null;
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // HELPERS DE UI
-  // ──────────────────────────────────────────────────────────────────────────
-  function setStatus(state, text) {
-    statusText.textContent = text;
-    statusPill.classList.toggle('live', state === 'live');
-  }
-
-  function showError(msg) {
-    loadingOverlay.classList.add('hidden');
-    errorOverlay.classList.add('visible');
-    errorMessage.textContent = msg;
-    setStatus('error', 'Falha na conexão');
-  }
-
-  function hideError() {
-    errorOverlay.classList.remove('visible');
-  }
-
-  function showLoading() {
-    loadingOverlay.classList.remove('hidden');
-    mainCard.classList.remove('visible');
-  }
-
-  function onReportLoaded() {
-    // Fade-out do loading e fade-in do card
-    loadingOverlay.classList.add('hidden');
-    // Pequeno delay para a transição ficar mais suave
-    requestAnimationFrame(() => {
-      mainCard.classList.add('visible');
-    });
-    setStatus('live', 'Ao vivo');
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // BUSCA O EMBED TOKEN DO BACKEND
-  // ──────────────────────────────────────────────────────────────────────────
-  async function fetchEmbedConfig() {
-    const response = await fetch(BACKEND_URL);
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-      throw new Error(err.error || `HTTP ${response.status}`);
+  <script>
+    var BACKEND_URL = 'https://powerbi-backend-production.up.railway.app/getEmbedToken';
+    function setStatus(cls, text) {
+      document.getElementById('status-pill').className = 'status-pill ' + cls;
+      document.getElementById('status-text').textContent = text;
     }
-    return response.json(); // { accessToken, embedUrl, reportId, expiration }
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // INICIALIZA O EMBED DO POWER BI
-  // ──────────────────────────────────────────────────────────────────────────
-  async function init() {
-    hideError();
-    showLoading();
-    setStatus('loading', 'Conectando…');
-
-    try {
-      // 1. Busca token do backend
-      const { accessToken, embedUrl, reportId, expiration } = await fetchEmbedConfig();
-
-      // 2. Mostra expiração do token no rodapé
-      if (expiration) {
-        const exp = new Date(expiration);
-        tokenExpiry.textContent = `Token expira às ${exp.toLocaleTimeString('pt-BR')}`;
-      }
-
-      // 3. Configuração do embed (usando a lib oficial powerbi-client)
-      const embedConfig = {
-        type:        'report',          // Tipo: relatório
-        id:          reportId,          // reportId vindo do backend
-        embedUrl:    embedUrl,          // embedUrl vindo do backend
-        accessToken: accessToken,       // Embed token gerado no backend
-        tokenType:   models.TokenType.Embed, // Tipo: Embed (não AAD)
-        settings: {
-          panes: {
-            filters:    { visible: false },  // Ocultar painel de filtros
-            pageNavigation: { visible: true, position: models.PageNavigationPosition.Bottom },
-          },
-          background:  models.BackgroundType.Transparent,
-          navContentPaneEnabled: true,
-        },
-      };
-
-      // 4. Limpa container anterior (caso seja um retry)
-      powerbi.reset(reportContainer);
-
-      // 5. Faz o embed
-      embeddedReport = powerbi.embed(reportContainer, embedConfig);
-
-      // 6. Eventos do relatório
-      embeddedReport.on('loaded', () => {
-        console.log('[PowerBI] Relatório carregado com sucesso.');
-        onReportLoaded();
-      });
-
-      embeddedReport.on('rendered', () => {
-        console.log('[PowerBI] Relatório renderizado.');
-      });
-
-      embeddedReport.on('error', (event) => {
-        console.error('[PowerBI] Erro no embed:', event.detail);
-        showError(`Erro no relatório: ${event.detail?.message || 'Verifique as credenciais e permissões.'}`);
-      });
-
-    } catch (err) {
-      console.error('[PowerBI] Erro ao inicializar:', err);
-      showError(`${err.message}`);
+    function showError(msg) {
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('error-overlay').classList.add('visible');
+      document.getElementById('error-msg').textContent = msg;
+      setStatus('error', 'Erro');
     }
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // INICIALIZAÇÃO
-  // ──────────────────────────────────────────────────────────────────────────
-  init();
-</script>
+    async function init() {
+      document.getElementById('loading-overlay').classList.remove('hidden');
+      document.getElementById('error-overlay').classList.remove('visible');
+      document.getElementById('loading-text').textContent = 'Conectando ao Power BI...';
+      setStatus('', 'Carregando...');
+      try {
+        var res = await fetch(BACKEND_URL);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var data = await res.json();
+        if (data.error) throw new Error(data.error);
+        var models = window['powerbi-client'] && window['powerbi-client'].models;
+        if (!models) throw new Error('powerbi-client nao carregado');
+        var pbi = new window['powerbi-client'].service.Service(
+          window['powerbi-client'].factories.hpmFactory,
+          window['powerbi-client'].factories.wpmpFactory,
+          window['powerbi-client'].factories.routerFactory
+        );
+        var container = document.getElementById('report-container');
+        pbi.reset(container);
+        var report = pbi.embed(container, {
+          type: 'report',
+          tokenType: models.TokenType.Embed,
+          accessToken: data.accessToken,
+          embedUrl: data.embedUrl,
+          id: data.reportId,
+          settings: { navContentPaneEnabled: true, filterPaneEnabled: true }
+        });
+        report.on('loaded', function() {
+          document.getElementById('loading-overlay').classList.add('hidden');
+          setStatus('live', 'Ativo');
+        });
+        report.on('error', function(e) {
+          showError('Erro: ' + (e.detail && e.detail.message || JSON.stringify(e.detail)));
+        });
+      } catch(e) { showError(e.message); }
+    }
+    init();
+  </script>
 </body>
 </html>
