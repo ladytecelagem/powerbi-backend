@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — LADY BI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    /* LOGIN */
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .login-card { background: white; border-radius: 20px; padding: 40px; width: 100%; max-width: 380px; box-shadow: 0 12px 48px rgba(0,0,0,0.10); }
+    .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .login-icon { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#1d1d1f,#444); display:flex; align-items:center; justify-content:center; }
+    .login-icon svg { width:18px; height:18px; fill:white; }
+    .login-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: #6e6e73; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    .form-group input { width: 100%; padding: 11px 14px; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; font-size: 15px; outline: none; }
+    .form-group input:focus { border-color: #1d1d1f; box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+    .btn { padding: 11px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-dark { background: #1d1d1f; color: white; width: 100%; margin-top: 4px; }
+    .btn-approve { background: #e6f9ee; color: #006600; border: 1px solid #99e6aa; font-size: 13px; padding: 7px 14px; }
+    .btn-reject  { background: #fff2f2; color: #cc0000; border: 1px solid #ffcccc; font-size: 13px; padding: 7px 14px; }
+    .btn-revoke  { background: #fff8e6; color: #885500; border: 1px solid #ffdd88; font-size: 13px; padding: 7px 14px; }
+    .error-msg { margin-top: 12px; padding: 10px 14px; background: #fff2f2; color: #cc0000; border-radius: 8px; font-size: 13px; display: none; }
+
+    /* ADMIN */
+    #admin-screen { display: none; }
+    .header { background: white; border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-icon { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,#1d1d1f,#444); display:flex; align-items:center; justify-content:center; }
+    .header-icon svg { width:14px; height:14px; fill:white; }
+    .header-title { font-size: 15px; font-weight: 700; }
+    .header-sub { font-size: 12px; color: #6e6e73; }
+    .btn-logout-sm { padding: 6px 14px; background: transparent; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .content { max-width: 900px; margin: 0 auto; padding: 28px 20px; }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat-card { background: white; border-radius: 14px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .stat-num { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: #6e6e73; }
+    .stat-pending .stat-num { color: #cc7700; }
+    .stat-approved .stat-num { color: #006600; }
+    .stat-rejected .stat-num { color: #cc0000; }
+
+    /* FILTROS */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-btn { padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid rgba(0,0,0,0.12); background: white; color: #6e6e73; transition: all 0.15s; }
+    .filter-btn.active { background: #1d1d1f; color: white; border-color: #1d1d1f; }
+
+    /* LISTA */
+    .section-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+    .user-list { display: flex; flex-direction: column; gap: 10px; }
+    .user-card { background: white; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 16px; }
+    .user-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .avatar-pending  { background: #fff3d6; color: #cc7700; }
+    .avatar-approved { background: #e6f9ee; color: #006600; }
+    .avatar-rejected { background: #fff2f2; color: #cc0000; }
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-email { font-size: 13px; color: #6e6e73; }
+    .user-company { font-size: 12px; color: #aaa; margin-top: 1px; }
+    .user-date { font-size: 11px; color: #bbb; margin-top: 3px; }
+    .user-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+    .badge-pending  { background: #fff3d6; color: #cc7700; }
+    .badge-approved { background: #e6f9ee; color: #006600; }
+    .badge-rejected { background: #fff2f2; color: #cc0000; }
+    .empty { text-align: center; padding: 40px; color: #aaa; font-size: 15px; }
+    .loading { text-align: center; padding: 40px; color: #aaa; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1d1d1f; color: white; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    @media (max-width: 600px) { .stats { grid-template-columns: 1fr 1fr; } .user-card { flex-wrap: wrap; } }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN ADMIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg></div>
+      <div><div style="font-size:15px;font-weight:700">LADY BI</div><div style="font-size:12px;color:#6e6e73">Painel Administrativo</div></div>
+    </div>
+    <div class="login-title">Acesso restrito</div>
+    <div class="login-sub">Entre com a senha de administrador para gerenciar os acessos</div>
+    <div class="form-group"><label>Senha de administrador</label><input type="password" id="admin-password" placeholder="Sua senha admin" onkeydown="if(event.key==='Enter')doAdminLogin()" /></div>
+    <button class="btn btn-dark" onclick="doAdminLogin()">Entrar</button>
+    <div class="error-msg" id="login-error">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<!-- PAINEL ADMIN -->
+<div id="admin-screen">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z"/></svg></div>
+      <div><div class="header-title">Painel Admin — LADY BI</div><div class="header-sub">Gerenciamento de acessos</div></div>
+    </div>
+    <button class="btn-logout-sm" onclick="doAdminLogout()">Sair</button>
+  </div>
+
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card stat-pending">
+        <div class="stat-num" id="count-pending">—</div>
+        <div class="stat-label">Pendentes</div>
+      </div>
+      <div class="stat-card stat-approved">
+        <div class="stat-num" id="count-approved">—</div>
+        <div class="stat-label">Aprovados</div>
+      </div>
+      <div class="stat-card stat-rejected">
+        <div class="stat-num" id="count-rejected">—</div>
+        <div class="stat-label">Rejeitados</div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('pending', this)">Pendentes</button>
+      <button class="filter-btn" onclick="setFilter('approved', this)">Aprovados</button>
+      <button class="filter-btn" onclick="setFilter('rejected', this)">Rejeitados</button>
+    </div>
+
+    <div class="section-title" id="list-title">Todos os usuarios</div>
+    <div class="user-list" id="user-list"><div class="loading">Carregando...</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var API = 'https://powerbi-backend-production.up.railway.app';
+  var adminToken = sessionStorage.getItem('admin_token');
+  var allUsers = [];
+  var currentFilter = 'all';
+
+  if (adminToken) loadAdmin();
+
+  async function doAdminLogin() {
+    var pw = document.getElementById('admin-password').value;
+    if (!pw) return;
+    try {
+      var r = await fetch(API + '/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) });
+      var d = await r.json();
+      if (!r.ok) { document.getElementById('login-error').style.display = 'block'; return; }
+      adminToken = d.token;
+      sessionStorage.setItem('admin_token', adminToken);
+      document.getElementById('login-error').style.display = 'none';
+      loadAdmin();
+    } catch(e) { document.getElementById('login-error').style.display = 'block'; }
+  }
+
+  function doAdminLogout() {
+    sessionStorage.removeItem('admin_token');
+    adminToken = null;
+    document.getElementById('admin-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  async function loadAdmin() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-screen').style.display = 'block';
+    await loadUsers();
+  }
+
+  async function loadUsers() {
+    try {
+      var r = await fetch(API + '/admin/users', { headers: { 'x-session-token': adminToken } });
+      if (r.status === 403) { doAdminLogout(); return; }
+      allUsers = await r.json();
+      updateStats();
+      renderUsers();
+    } catch(e) { document.getElementById('user-list').innerHTML = '<div class="empty">Erro ao carregar usuarios</div>'; }
+  }
+
+  function updateStats() {
+    document.getElementById('count-pending').textContent  = allUsers.filter(u => u.status === 'pending').length;
+    document.getElementById('count-approved').textContent = allUsers.filter(u => u.status === 'approved').length;
+    document.getElementById('count-rejected').textContent = allUsers.filter(u => u.status === 'rejected').length;
+  }
+
+  function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    var titles = { all: 'Todos os usuarios', pending: 'Pendentes de aprovacao', approved: 'Usuarios aprovados', rejected: 'Usuarios rejeitados' };
+    document.getElementById('list-title').textContent = titles[filter];
+    renderUsers();
+  }
+
+  function renderUsers() {
+    var users = currentFilter === 'all' ? allUsers : allUsers.filter(u => u.status === currentFilter);
+    users.sort((a,b) => { var o = {pending:0,approved:1,rejected:2}; return o[a.status]-o[b.status] || new Date(b.createdAt)-new Date(a.createdAt); });
+    var list = document.getElementById('user-list');
+    if (!users.length) { list.innerHTML = '<div class="empty">Nenhum usuario encontrado</div>'; return; }
+    list.innerHTML = users.map(u => {
+      var initial = (u.name || u.email)[0].toUpperCase();
+      var date = new Date(u.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      var actions = '';
+      if (u.status === 'pending') {
+        actions = `<button class="btn btn-approve" onclick="approve('${u.email}')">Aprovar</button>
+                   <button class="btn btn-reject"  onclick="reject('${u.email}')">Rejeitar</button>`;
+      } else if (u.status === 'approved') {
+        actions = `<span class="badge badge-approved">✓ Aprovado</span>
+                   <button class="btn btn-reject" onclick="reject('${u.email}')">Revogar</button>`;
+      } else {
+        actions = `<span class="badge badge-rejected">✗ Rejeitado</span>
+                   <button class="btn btn-approve" onclick="approve('${u.email}')">Aprovar</button>`;
+      }
+      return `<div class="user-card" id="card-${u.email.replace(/[@.]/g,'_')}">
+        <div class="user-avatar avatar-${u.status}">${initial}</div>
+        <div class="user-info">
+          <div class="user-name">${u.name}</div>
+          <div class="user-email">${u.email}</div>
+        </div>
+        <div class="user-actions">${actions}</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function approve(email) {
+    try {
+      var r = await fetch(API + '/admin/approve/' + encodeURIComponent(email), { method: 'POST', headers: { 'x-session-token': adminToken } });
+      if (r.ok) { showToast('✓ ' + email + ' aprovado'); await loadUsers(); }
+    } catch(e) { showToast('Erro ao aprovar'); }
+  }
+
+  async function reject(email) {
+    try {
+      var r = await fetch(API + '/admin/reject/' + encodeURIComponent(email), { method: 'POST', headers: { 'x-session-token': adminToken } });
+      if (r.ok) { showToast('✗ ' + email + ' rejeitado/revogado'); await loadUsers(); }
+    } catch(e) { showToast('Erro ao rejeitar'); }
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
