@@ -60,6 +60,7 @@
     .spinner { width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid rgba(0,0,0,0.08); border-top-color: #1d1d1f; animation: spin 0.75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .overlay-text { font-size: 13px; color: #6e6e73; }
+    .overlay-retry { margin-top: 8px; padding: 8px 20px; background: #1d1d1f; color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; display: none; }
   </style>
 </head>
 <body>
@@ -116,8 +117,9 @@
     <main class="main-area">
       <div class="report-card">
         <div class="overlay" id="loading-overlay">
-          <div class="spinner"></div>
+          <div class="spinner" id="loading-spinner"></div>
           <div class="overlay-text" id="loading-text">Carregando relatorio...</div>
+          <button class="overlay-retry" id="retry-btn" onclick="loadReport()">Tentar novamente</button>
         </div>
         <div id="report-container"></div>
       </div>
@@ -146,6 +148,14 @@
       var el = document.getElementById(id);
       el.className = 'auth-msg';
       el.textContent = '';
+    }
+
+    function showLoadError(msg) {
+      document.getElementById('loading-spinner').style.display = 'none';
+      document.getElementById('loading-text').textContent = msg;
+      document.getElementById('retry-btn').style.display = 'block';
+      document.getElementById('status-text').textContent = 'Erro';
+      document.getElementById('status-pill').className = 'status-pill';
     }
 
     function doLogin() {
@@ -228,44 +238,77 @@
     }
 
     function loadReport() {
+      // Reset overlay
+      document.getElementById('loading-spinner').style.display = 'block';
+      document.getElementById('retry-btn').style.display = 'none';
       document.getElementById('loading-overlay').classList.remove('hidden');
       document.getElementById('loading-text').textContent = 'Carregando relatorio...';
       document.getElementById('status-text').textContent = 'Carregando';
       document.getElementById('status-pill').className = 'status-pill';
+
       fetch(API + '/getEmbedToken', { headers: { 'x-session-token': sessionToken } })
       .then(function(r) {
         if (r.status === 401) { doLogout(); return null; }
+        if (!r.ok) {
+          return r.json().then(function(d) { throw new Error(d.error || 'Erro HTTP ' + r.status); });
+        }
         return r.json();
       })
       .then(function(data) {
         if (!data) return;
-        if (data.error) { document.getElementById('loading-text').textContent = 'Erro: ' + data.error; return; }
-        var models = window['powerbi-client'] && window['powerbi-client'].models;
-        if (!models) { document.getElementById('loading-text').textContent = 'Erro: powerbi-client nao carregado'; return; }
-        var pbi = new window['powerbi-client'].service.Service(
-          window['powerbi-client'].factories.hpmFactory,
-          window['powerbi-client'].factories.wpmpFactory,
-          window['powerbi-client'].factories.routerFactory
+
+        // Valida campos obrigatorios
+        if (!data.accessToken) { showLoadError('Token de acesso nao recebido. Tente novamente.'); return; }
+        if (!data.embedUrl)    { showLoadError('URL de embed nao recebida. Tente novamente.');    return; }
+        if (!data.reportId)    { showLoadError('ID do relatorio nao recebido. Tente novamente.'); return; }
+
+        // Verifica se a biblioteca Power BI foi carregada
+        var pbiClient = window['powerbi-client'];
+        if (!pbiClient || !pbiClient.models) {
+          showLoadError('Biblioteca Power BI nao carregada. Recarregue a pagina.');
+          return;
+        }
+
+        var models = pbiClient.models;
+
+        var pbi = new pbiClient.service.Service(
+          pbiClient.factories.hpmFactory,
+          pbiClient.factories.wpmpFactory,
+          pbiClient.factories.routerFactory
         );
+
         var container = document.getElementById('report-container');
         pbi.reset(container);
-        var report = pbi.embed(container, {
-          type: 'report',
-          embedUrl: data.embedUrl,
-          id: data.reportId,
-          settings: { navContentPaneEnabled: true, filterPaneEnabled: false, background: models.BackgroundType.Transparent }
-        });
-        report.on('loaded', function() {
-          document.getElementById('loading-overlay').classList.add('hidden');
-          document.getElementById('status-text').textContent = 'Ativo';
-          document.getElementById('status-pill').className = 'status-pill live';
-        });
-        report.on('error', function(e) {
-          document.getElementById('loading-text').textContent = 'Erro: ' + (e.detail && e.detail.message || JSON.stringify(e.detail));
-        });
+
+        try {
+          var report = pbi.embed(container, {
+            type: 'report',
+            tokenType: models.TokenType.Embed,
+            accessToken: data.accessToken,
+            embedUrl: data.embedUrl,
+            id: data.reportId,
+            settings: {
+              navContentPaneEnabled: true,
+              filterPaneEnabled: false,
+              background: models.BackgroundType.Transparent
+            }
+          });
+
+            document.getElementById('status-text').textContent = 'Ativo';
+            document.getElementById('status-pill').className = 'status-pill live';
+          });
+
+          report.on('error', function(e) {
+            var msg = (e.detail && e.detail.message) ? e.detail.message : JSON.stringify(e.detail);
+            showLoadError('Erro no relatorio: ' + msg);
+          });
+
+        } catch(embedErr) {
+          showLoadError('Erro ao inicializar: ' + embedErr.message);
+        }
       })
       .catch(function(e) {
-        document.getElementById('loading-text').textContent = 'Erro de conexao: ' + e.message;
+        showLoadError('Falha ao carregar: ' + e.message);
       });
     }
 
