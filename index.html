@@ -32,6 +32,7 @@
     .auth-msg.error{background:#fff2f2;color:#cc0000;border:1px solid #ffcccc;display:block}
     .auth-msg.success{background:#f0fff4;color:#006600;border:1px solid #99e6aa;display:block}
     .auth-msg.info{background:#f0f6ff;color:#004499;border:1px solid #aaccff;display:block}
+    /* APP */
     #app-screen{flex:1;display:none;flex-direction:column;overflow:hidden}
     .page-header{height:52px;flex-shrink:0;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,.08);display:flex;align-items:center;padding:0 20px;justify-content:space-between}
     .header-left{display:flex;align-items:center;gap:10px}
@@ -57,9 +58,40 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .overlay-text{font-size:13px;color:#6e6e73}
     .overlay-retry{margin-top:4px;padding:8px 20px;background:#1d1d1f;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;display:none}
+    /* BLOCO DE ANOTACOES */
+    .fab{position:fixed;bottom:28px;right:28px;z-index:200;background:#1d1d1f;color:white;border:none;border-radius:50px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:all .2s}
+    .fab:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(0,0,0,.3)}
+    .fab-badge{background:#ff3b30;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:2px}
+    .notes-panel{position:fixed;bottom:90px;right:28px;z-index:200;width:340px;background:white;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.08);display:none;flex-direction:column;overflow:hidden;max-height:520px}
+    .notes-panel.open{display:flex}
+    .notes-header{padding:16px 20px 14px;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between}
+    .notes-title{font-size:15px;font-weight:700;color:#1d1d1f}
+    .notes-close{background:none;border:none;font-size:20px;cursor:pointer;color:#6e6e73;line-height:1;padding:0}
+    .notes-body{padding:16px;flex:1;overflow-y:auto}
+    .notes-input-row{display:flex;gap:8px;margin-bottom:14px}
+    .notes-input{flex:1;padding:10px 14px;border:1px solid rgba(0,0,0,.12);border-radius:10px;font-size:14px;outline:none}
+    .notes-input:focus{border-color:#1d1d1f;box-shadow:0 0 0 3px rgba(0,0,0,.08)}
+    .btn-add{padding:10px 14px;background:#1d1d1f;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .btn-add:hover{opacity:.85}
+    .peca-list{display:flex;flex-direction:column;gap:6px;min-height:40px}
+    .peca-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f5f5f7;border-radius:8px;font-size:14px}
+    .peca-code{font-weight:600;color:#1d1d1f;font-family:monospace;font-size:13px}
+    .peca-remove{background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;line-height:1;padding:0 2px}
+    .peca-remove:hover{color:#ff3b30}
+    .notes-empty{text-align:center;color:#aaa;font-size:13px;padding:20px 0}
+    .notes-footer{padding:14px 16px;border-top:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;gap:10px}
+    .notes-obs{width:100%;padding:10px 14px;border:1px solid rgba(0,0,0,.12);border-radius:10px;font-size:13px;outline:none;resize:none;font-family:inherit}
+    .notes-obs:focus{border-color:#1d1d1f}
+    .btn-send{width:100%;padding:11px;background:#1d1d1f;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+    .btn-send:hover{opacity:.85}
+    .btn-send:disabled{opacity:.5;cursor:not-allowed}
+    .send-msg{font-size:12px;text-align:center;padding:4px 0;display:none}
+    .send-msg.ok{color:#006600;display:block}
+    .send-msg.err{color:#cc0000;display:block}
   </style>
 </head>
 <body>
+  <!-- TELA DE LOGIN/CADASTRO -->
   <div id="auth-screen">
     <div class="auth-card">
       <div class="auth-logo">
@@ -90,6 +122,7 @@
       </div>
     </div>
   </div>
+  <!-- TELA DO RELATORIO -->
   <div id="app-screen">
     <header class="page-header">
       <div class="header-left">
@@ -112,11 +145,39 @@
         <div id="report-container"></div>
       </div>
     </main>
+    <!-- BOTAO FLUTUANTE -->
+    <button class="fab" onclick="toggleNotes()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1H8v-1zm0 3h8v1H8v-1zm0-6h5v1H8v-1z"/></svg>
+      Lista de Pecas
+      <span class="fab-badge" id="fab-badge" style="display:none">0</span>
+    </button>
+    <!-- PAINEL DE ANOTACOES -->
+    <div class="notes-panel" id="notes-panel">
+      <div class="notes-header">
+        <span class="notes-title">📋 Lista de Pecas</span>
+        <button class="notes-close" onclick="toggleNotes()">×</button>
+      </div>
+      <div class="notes-body">
+        <div class="notes-input-row">
+          <input class="notes-input" id="peca-input" type="text" placeholder="Codigo da peca ex: 1234-A" onkeydown="if(event.key==='Enter')addPeca()"/>
+          <button class="btn-add" onclick="addPeca()">+ Adicionar</button>
+        </div>
+        <div class="peca-list" id="peca-list">
+          <div class="notes-empty" id="peca-empty">Nenhuma peca adicionada ainda</div>
+        </div>
+      </div>
+      <div class="notes-footer">
+        <textarea class="notes-obs" id="notes-obs" rows="2" placeholder="Observacoes (opcional): prazo, quantidade, etc..."></textarea>
+        <button class="btn-send" id="btn-send" onclick="sendList()">📧 Enviar para Expedicao</button>
+        <div class="send-msg" id="send-msg"></div>
+      </div>
+    </div>
   </div>
   <script>
     var API="https://powerbi-backend-production.up.railway.app";
     var sessionToken=localStorage.getItem("session_token");
     var userName=localStorage.getItem("user_name");
+    var pecas=[];
     function showTab(tab){document.getElementById("tab-login").style.display=(tab==="login")?"":"none";document.getElementById("tab-register").style.display=(tab==="register")?"":"none";document.getElementById("tab-btn-login").classList.toggle("active",tab==="login");document.getElementById("tab-btn-register").classList.toggle("active",tab==="register");}
     function showMsg(id,msg,type){var el=document.getElementById(id);el.textContent=msg;el.className="auth-msg "+type;}
     function clearMsg(id){var el=document.getElementById(id);el.className="auth-msg";el.textContent="";}
@@ -126,6 +187,13 @@
     function doLogout(){fetch(API+"/auth/logout",{method:"POST",headers:{"x-session-token":sessionToken}}).catch(function(){});localStorage.removeItem("session_token");localStorage.removeItem("user_name");sessionToken=null;userName=null;document.getElementById("app-screen").style.display="none";document.getElementById("auth-screen").style.display="flex";}
     function showApp(){document.getElementById("auth-screen").style.display="none";document.getElementById("app-screen").style.display="flex";document.getElementById("user-name").textContent=userName||"";loadReport();}
     function loadReport(){document.getElementById("loading-spinner").style.display="block";document.getElementById("retry-btn").style.display="none";document.getElementById("loading-overlay").classList.remove("hidden");document.getElementById("loading-text").textContent="Carregando relatorio...";document.getElementById("status-text").textContent="Carregando";document.getElementById("status-pill").className="status-pill";fetch(API+"/getEmbedToken",{headers:{"x-session-token":sessionToken}}).then(function(r){if(r.status===401){doLogout();return null;}if(!r.ok){return r.json().then(function(d){throw new Error(d.error||"Erro HTTP "+r.status);});}return r.json();}).then(function(data){if(!data)return;if(!data.accessToken){showLoadError("Token de acesso nao recebido.");return;}if(!data.embedUrl){showLoadError("URL de embed nao recebida.");return;}var pbiClient=window["powerbi-client"];if(!pbiClient||!pbiClient.models){showLoadError("Biblioteca Power BI nao carregada.");return;}var models=pbiClient.models;var pbi=new pbiClient.service.Service(pbiClient.factories.hpmFactory,pbiClient.factories.wpmpFactory,pbiClient.factories.routerFactory);var container=document.getElementById("report-container");pbi.reset(container);try{var report=pbi.embed(container,{type:"report",tokenType:models.TokenType.Embed,accessToken:data.accessToken,embedUrl:data.embedUrl,id:data.reportId,settings:{navContentPaneEnabled:true,filterPaneEnabled:false,background:models.BackgroundType.Transparent}});report.on("loaded",function(){document.getElementById("loading-overlay").classList.add("hidden");document.getElementById("status-text").textContent="Ativo";document.getElementById("status-pill").className="status-pill live";});report.on("error",function(e){showLoadError("Erro: "+((e.detail&&e.detail.message)?e.detail.message:JSON.stringify(e.detail)));});}catch(embedErr){showLoadError("Erro ao inicializar: "+embedErr.message);}}).catch(function(e){showLoadError("Falha: "+e.message);});}
+    /* BLOCO DE ANOTACOES */
+    function toggleNotes(){var p=document.getElementById("notes-panel");p.classList.toggle("open");}
+    function updateBadge(){var b=document.getElementById("fab-badge");if(pecas.length>0){b.style.display="flex";b.textContent=pecas.length;}else{b.style.display="none";}}
+    function renderPecas(){var list=document.getElementById("peca-list");var empty=document.getElementById("peca-empty");if(pecas.length===0){list.innerHTML='<div class="notes-empty" id="peca-empty">Nenhuma peca adicionada ainda</div>';return;}list.innerHTML=pecas.map(function(p,i){return'<div class="peca-item"><span class="peca-code">'+p+'</span><button class="peca-remove" onclick="removePeca('+i+')">×</button></div>';}).join("");}
+    function addPeca(){var input=document.getElementById("peca-input");var val=input.value.trim().toUpperCase();if(!val)return;if(pecas.indexOf(val)!==-1){input.value="";return;}pecas.push(val);input.value="";renderPecas();updateBadge();document.getElementById("send-msg").className="send-msg";}
+    function removePeca(i){pecas.splice(i,1);renderPecas();updateBadge();}
+    function sendList(){if(pecas.length===0){alert("Adicione pelo menos uma peca antes de enviar.");return;}var btn=document.getElementById("btn-send");var obs=document.getElementById("notes-obs").value.trim();btn.disabled=true;btn.textContent="Enviando...";fetch(API+"/send-list",{method:"POST",headers:{"Content-Type":"application/json","x-session-token":sessionToken},body:JSON.stringify({pecas:pecas,obs:obs,userName:userName})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){btn.disabled=false;btn.textContent="📧 Enviar para Expedicao";var msg=document.getElementById("send-msg");if(res.status===200){msg.textContent="✓ Enviado com sucesso para a expedicao!";msg.className="send-msg ok";pecas=[];renderPecas();updateBadge();document.getElementById("notes-obs").value="";}else{msg.textContent="Erro ao enviar: "+(res.data.error||"tente novamente");msg.className="send-msg err";}}).catch(function(){btn.disabled=false;btn.textContent="📧 Enviar para Expedicao";var msg=document.getElementById("send-msg");msg.textContent="Erro de conexao. Tente novamente.";msg.className="send-msg err";});}
     if(sessionToken){fetch(API+"/auth/me",{headers:{"x-session-token":sessionToken}}).then(function(r){return r.json();}).then(function(d){if(d.status==="approved"){showApp();}else{localStorage.clear();}}).catch(function(){localStorage.clear();});}
   </script>
 </body>
