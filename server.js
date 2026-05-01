@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const app = express();
 app.use(cors());
@@ -17,17 +17,14 @@ const CONFIG = {
   groupId:       process.env.GROUP_ID       || 'a44afaa1-3b9e-4ea3-a33f-2ef1777ea80c',
   reportId:      process.env.REPORT_ID      || 'bad25a70-e239-4b00-8933-b1fa530185b4',
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
-  smtpHost:      process.env.SMTP_HOST      || '',
-  smtpPort:      parseInt(process.env.SMTP_PORT || '587'),
-  smtpUser:      process.env.SMTP_USER      || '',
-  smtpPass:      process.env.SMTP_PASS      || '',
+  resendApiKey:  process.env.RESEND_API_KEY || '',
   emailTo:       process.env.EMAIL_TO       || 'tecidos@ladytex.com.br',
-  emailFrom:     process.env.EMAIL_FROM     || '',
+  emailFrom:     process.env.EMAIL_FROM     || 'noreply@ladybi.com.br',
 };
 
 const users = {};
 const sessions = {};
-const emailHistory = []; // historico de envios em memoria
+const emailHistory = [];
 
 // --- POWER BI ---
 async function getPbiToken() {
@@ -108,29 +105,23 @@ app.post('/admin/login', async (req, res) => {
   const token = createSession('__admin__');
   res.json({ ok: true, token });
 });
-
 app.get('/admin/users', requireAdmin, (req, res) => {
   res.json(Object.values(users).map(u => ({ name: u.name, email: u.email, company: u.company, status: u.status, createdAt: u.createdAt })));
 });
-
 app.post('/admin/approve/:email', requireAdmin, (req, res) => {
   const user = users[req.params.email];
   if (!user) return res.status(404).json({ error: 'Usuario nao encontrado' });
   user.status = 'approved';
-  console.log('[ADMIN] Aprovado:', req.params.email);
   res.json({ ok: true });
 });
-
 app.post('/admin/reject/:email', requireAdmin, (req, res) => {
   const user = users[req.params.email];
   if (!user) return res.status(404).json({ error: 'Usuario nao encontrado' });
   user.status = 'rejected';
-  console.log('[ADMIN] Rejeitado:', req.params.email);
   res.json({ ok: true });
 });
-
 app.get('/admin/email-history', requireAdmin, (req, res) => {
-  res.json(emailHistory.slice().reverse()); // mais recente primeiro
+  res.json(emailHistory.slice().reverse());
 });
 
 // --- EMBED TOKEN ---
@@ -149,98 +140,88 @@ app.get('/getEmbedToken', requireAuth, async (req, res) => {
   } catch (err) { console.error('[PBI]', err.message); res.status(500).json({ error: err.message }); }
 });
 
-// --- ENVIO DE LISTA DE PECAS ---
+// --- ENVIO DE LISTA (via Resend) ---
 app.post('/send-list', requireAuth, async (req, res) => {
   const { pecas, obs, cliente, previsao } = req.body || {};
   const user = req.user;
   if (!pecas || !pecas.length) return res.status(400).json({ error: 'Nenhuma peca informada' });
 
   const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-  const listaPecas = pecas.map((p, i) => (i + 1) + '. ' + p).join('\n');
 
-  const htmlEmail = [
-    '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">',
-    '<div style="background:#1d1d1f;padding:20px 24px;border-radius:10px 10px 0 0">',
-    '<h2 style="color:white;margin:0;font-size:18px">&#128203; Consulta de Disponibilidade de Pecas</h2>',
-    '<p style="color:#aaa;margin:6px 0 0;font-size:13px">Dashboard Comercial — LADY BI</p>',
-    '</div>',
-    '<div style="background:#f8f8f8;padding:20px 24px;border:1px solid #eee;border-top:none">',
-    '<table style="width:100%;border-collapse:collapse">',
-    '<tr><td style="padding:5px 0;color:#666;font-size:13px;width:120px">Data/Hora</td><td style="padding:5px 0;font-weight:600;font-size:13px">' + dataHora + '</td></tr>',
-    '<tr><td style="padding:5px 0;color:#666;font-size:13px">Solicitante</td><td style="padding:5px 0;font-weight:600;font-size:13px">' + user.name + ' &lt;' + user.email + '&gt;</td></tr>',
-    (user.company ? '<tr><td style="padding:5px 0;color:#666;font-size:13px">Empresa</td><td style="padding:5px 0;font-size:13px">' + user.company + '</td></tr>' : ''),
-    (cliente ? '<tr><td style="padding:5px 0;color:#666;font-size:13px">Cliente</td><td style="padding:5px 0;font-weight:700;font-size:14px;color:#1d1d1f">' + cliente + '</td></tr>' : ''),
-    (previsao ? '<tr><td style="padding:5px 0;color:#666;font-size:13px">Previsao</td><td style="padding:5px 0;font-size:13px">' + previsao + '</td></tr>' : ''),
-    '</table>',
-    '</div>',
-    '<div style="background:white;padding:20px 24px;border:1px solid #eee;border-top:none">',
-    '<h3 style="margin:0 0 14px;font-size:15px;color:#1d1d1f">Pecas Solicitadas (' + pecas.length + ')</h3>',
-    '<table style="width:100%;border-collapse:collapse">',
-    pecas.map(function(p, i) {
-      return '<tr style="background:' + (i%2===0?'#f5f5f7':'white') + '"><td style="padding:8px 12px;color:#888;font-size:12px;width:32px">' + (i+1) + '</td><td style="padding:8px 12px;font-family:monospace;font-size:14px;font-weight:600">' + p + '</td></tr>';
-    }).join(''),
-    '</table>',
-    (obs ? '<div style="margin-top:16px;padding:12px 16px;background:#fff8e6;border-radius:8px;border-left:4px solid #f0a500"><strong style="font-size:13px">Observacoes:</strong><p style="margin:6px 0 0;font-size:13px">' + obs + '</p></div>' : ''),
-    '</div>',
-    '<div style="padding:12px 24px;background:#f0f0f0;border-radius:0 0 10px 10px;font-size:11px;color:#888;text-align:center">',
-    'Mensagem enviada automaticamente pelo Dashboard Comercial LADY BI',
-    '</div></div>'
-  ].filter(Boolean).join('');
+  const htmlEmail = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+    + '<div style="background:#1d1d1f;padding:20px 24px;border-radius:10px 10px 0 0">'
+    + '<h2 style="color:white;margin:0;font-size:18px">Consulta de Disponibilidade de Pecas</h2>'
+    + '<p style="color:#aaa;margin:6px 0 0;font-size:13px">Dashboard Comercial - LADY BI</p></div>'
+    + '<div style="background:#f8f8f8;padding:20px 24px;border:1px solid #eee;border-top:none">'
+    + '<table style="width:100%;border-collapse:collapse">'
+    + '<tr><td style="padding:4px 0;color:#666;font-size:13px;width:110px">Data/Hora</td><td style="padding:4px 0;font-size:13px"><b>' + dataHora + '</b></td></tr>'
+    + '<tr><td style="padding:4px 0;color:#666;font-size:13px">Solicitante</td><td style="padding:4px 0;font-size:13px">' + user.name + ' &lt;' + user.email + '&gt;</td></tr>'
+    + (user.company ? '<tr><td style="padding:4px 0;color:#666;font-size:13px">Empresa</td><td style="padding:4px 0;font-size:13px">' + user.company + '</td></tr>' : '')
+    + (cliente ? '<tr><td style="padding:4px 0;color:#666;font-size:13px">Cliente</td><td style="padding:4px 0;font-size:14px;font-weight:700;color:#1d1d1f">' + cliente + '</td></tr>' : '')
+    + (previsao ? '<tr><td style="padding:4px 0;color:#666;font-size:13px">Previsao</td><td style="padding:4px 0;font-size:13px">' + previsao + '</td></tr>' : '')
+    + '</table></div>'
+    + '<div style="background:white;padding:20px 24px;border:1px solid #eee;border-top:none">'
+    + '<h3 style="margin:0 0 14px;font-size:15px;color:#1d1d1f">Pecas Solicitadas (' + pecas.length + ')</h3>'
+    + '<table style="width:100%;border-collapse:collapse">'
+    + pecas.map(function(p, i) {
+        var bg = i % 2 === 0 ? '#f5f5f7' : 'white';
+        var code = p.code || p;
+        var nome = p.nome || '';
+        return '<tr style="background:' + bg + '">'
+          + '<td style="padding:8px 12px;color:#888;font-size:12px;width:28px">' + (i+1) + '</td>'
+          + '<td style="padding:8px 12px;font-family:monospace;font-size:14px;font-weight:700">' + code + '</td>'
+          + '<td style="padding:8px 12px;font-size:13px;color:#444">' + nome + '</td>'
+          + '</tr>';
+      }).join('')
+    + '</table>'
+    + (obs ? '<div style="margin-top:14px;padding:12px;background:#fff8e6;border-radius:8px;border-left:4px solid #f0a500"><b style="font-size:13px">Observacoes:</b><p style="margin:4px 0 0;font-size:13px">' + obs + '</p></div>' : '')
+    + '</div>'
+    + '<div style="padding:12px 24px;background:#f0f0f0;border-radius:0 0 10px 10px;font-size:11px;color:#888;text-align:center">Enviado automaticamente pelo Dashboard Comercial LADY BI</div>'
+    + '</div>';
 
-  // Salva no historico independente do envio
   const registro = {
     id: Date.now(),
-    dataHora: dataHora,
-    solicitante: user.name,
-    email: user.email,
-    empresa: user.company || '',
-    cliente: cliente || '',
-    previsao: previsao || '',
-    pecas: pecas,
-    obs: obs || '',
-    status: 'pendente'
+    dataHora, solicitante: user.name, email: user.email,
+    empresa: user.company || '', cliente: cliente || '',
+    previsao: previsao || '', pecas: pecas.map(function(p){ return p.code || p; }),
+    obs: obs || '', status: 'pendente'
   };
 
   try {
-    if (!CONFIG.smtpHost || !CONFIG.smtpUser || !CONFIG.smtpPass) {
+    if (!CONFIG.resendApiKey) {
       registro.status = 'simulado';
       emailHistory.push(registro);
-      console.log('[MAIL] SMTP nao configurado. Simulando envio. Pecas:', pecas.join(', '));
-      return res.json({ ok: true, message: 'Lista registrada! (configure SMTP para envio real)' });
+      console.log('[MAIL] RESEND_API_KEY nao configurada. Simulando envio.');
+      return res.json({ ok: true, message: 'Lista registrada! (configure RESEND_API_KEY para envio real)' });
     }
 
-    const transporter = nodemailer.createTransport({
-      host: CONFIG.smtpHost,
-      port: CONFIG.smtpPort,
-      secure: CONFIG.smtpPort === 465,
-      auth: { user: CONFIG.smtpUser, pass: CONFIG.smtpPass },
-      tls: { rejectUnauthorized: false, ciphers: 'SSLv3' },
-      connectionTimeout: 15000,
-      greetingTimeout: 10000,
-      socketTimeout: 20000,
-    });
+    const resend = new Resend(CONFIG.resendApiKey);
+    const assunto = '[LADY BI] Consulta de Pecas - ' + (cliente || user.name) + ' (' + pecas.length + ' itens)';
 
-    const assunto = '[LADY BI] Consulta de Pecas — ' + (cliente || user.name) + ' (' + pecas.length + ' itens)';
-    const textoPuro = 'Solicitante: ' + user.name + '\nCliente: ' + (cliente||'-') + '\nPrevisao: ' + (previsao||'-') + '\nPecas:\n' + listaPecas + (obs ? '\n\nObs: ' + obs : '');
-
-    await transporter.sendMail({
-      from: '"LADY BI Dashboard" <' + (CONFIG.emailFrom || CONFIG.smtpUser) + '>',
-      to: CONFIG.emailTo,
-      replyTo: user.email,
+    const { error } = await resend.emails.send({
+      from: 'LADY BI Dashboard <' + CONFIG.emailFrom + '>',
+      to: [CONFIG.emailTo],
+      reply_to: user.email,
       subject: assunto,
-      text: textoPuro,
       html: htmlEmail,
     });
 
+    if (error) {
+      registro.status = 'erro: ' + JSON.stringify(error);
+      emailHistory.push(registro);
+      console.error('[MAIL] Resend erro:', error);
+      return res.status(500).json({ error: 'Erro ao enviar: ' + JSON.stringify(error) });
+    }
+
     registro.status = 'enviado';
     emailHistory.push(registro);
-    console.log('[MAIL] Enviado para', CONFIG.emailTo, '— cliente:', cliente, '— pecas:', pecas.length);
+    console.log('[MAIL] Enviado via Resend para', CONFIG.emailTo, '- pecas:', pecas.length);
     res.json({ ok: true, message: 'Lista enviada com sucesso para a expedicao!' });
   } catch (err) {
     registro.status = 'erro: ' + err.message;
     emailHistory.push(registro);
     console.error('[MAIL] Erro:', err.message);
-    res.status(500).json({ error: 'Erro ao enviar email: ' + err.message });
+    res.status(500).json({ error: 'Erro: ' + err.message });
   }
 });
 
