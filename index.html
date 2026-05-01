@@ -61,7 +61,7 @@
     .fab{position:fixed;bottom:28px;right:28px;z-index:200;background:#1d1d1f;color:white;border:none;border-radius:50px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;transition:all .2s}
     .fab:hover{transform:scale(1.05)}
     .fab-badge{background:#ff3b30;color:white;border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
-    .notes-panel{position:fixed;bottom:90px;right:28px;z-index:200;width:360px;background:white;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.08);display:none;flex-direction:column;overflow:hidden;max-height:580px}
+    .notes-panel{position:fixed;bottom:90px;right:28px;z-index:200;width:400px;background:white;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.08);display:none;flex-direction:column;overflow:hidden;max-height:600px}
     .notes-panel.open{display:flex}
     .notes-header{padding:16px 20px 14px;border-bottom:1px solid rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
     .notes-title{font-size:15px;font-weight:700;color:#1d1d1f}
@@ -73,14 +73,20 @@
     .notes-meta-input{padding:8px 12px;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;outline:none;width:100%}
     .notes-meta-input:focus{border-color:#1d1d1f}
     .notes-meta-input[readonly]{background:#f5f5f7;color:#6e6e73}
-    .notes-input-row{display:flex;gap:8px;margin-bottom:10px}
-    .notes-input{flex:1;padding:10px 12px;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:14px;outline:none}
-    .notes-input:focus{border-color:#1d1d1f}
-    .btn-add{padding:10px 14px;background:#1d1d1f;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .peca-input-area{margin-bottom:10px}
+    .peca-input-row1{display:flex;gap:6px;margin-bottom:5px}
+    .peca-input-row2{display:flex;gap:6px}
+    .input-codigo{flex:1;padding:9px 12px;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;font-family:monospace;font-weight:600;outline:none}
+    .input-nome{flex:2;padding:9px 12px;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;outline:none}
+    .input-codigo:focus,.input-nome:focus{border-color:#1d1d1f}
+    .btn-add{padding:9px 14px;background:#1d1d1f;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .btn-add:hover{opacity:.85}
     .peca-list{display:flex;flex-direction:column;gap:5px}
-    .peca-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#f5f5f7;border-radius:7px}
-    .peca-code{font-weight:600;color:#1d1d1f;font-family:monospace;font-size:13px}
-    .peca-remove{background:none;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:0 2px}
+    .peca-item{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 10px;background:#f5f5f7;border-radius:8px}
+    .peca-info{flex:1}
+    .peca-code{font-weight:700;color:#1d1d1f;font-family:monospace;font-size:13px}
+    .peca-nome{font-size:12px;color:#6e6e73;margin-top:1px}
+    .peca-remove{background:none;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0}
     .peca-remove:hover{color:#ff3b30}
     .notes-empty{text-align:center;color:#aaa;font-size:13px;padding:16px 0}
     .notes-footer{padding:12px 16px;border-top:1px solid rgba(0,0,0,.06);flex-shrink:0}
@@ -102,15 +108,15 @@
         <div><div class="auth-logo-text">LADY BI</div><div class="auth-logo-sub">Dashboard Comercial</div></div>
       </div>
       <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-btn-login" onclick="showTab('login')">Entrar</button>
-        <button class="auth-tab" id="tab-btn-register" onclick="showTab('register')">Cadastrar</button>
+        <button class="auth-tab active" id="tab-btn-login">Entrar</button>
+        <button class="auth-tab" id="tab-btn-register">Cadastrar</button>
       </div>
       <div id="tab-login">
         <div class="auth-title">Bem-vindo</div>
         <div class="auth-subtitle">Entre com sua conta para acessar o dashboard</div>
-        <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-        <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="Sua senha" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-        <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar</button>
+        <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com"/></div>
+        <div class="form-group"><label>Senha</label><input type="password" id="login-password" placeholder="Sua senha"/></div>
+        <button class="btn-primary" id="btn-login">Entrar</button>
         <div class="auth-msg" id="login-msg"></div>
       </div>
       <div id="tab-register" style="display:none">
@@ -119,8 +125,8 @@
         <div class="form-group"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome"/></div>
         <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="seu@email.com"/></div>
         <div class="form-group"><label>Empresa</label><input type="text" id="reg-company" placeholder="Nome da empresa (opcional)"/></div>
-        <div class="form-group"><label>Senha</label><input type="password" id="reg-password" placeholder="Crie uma senha" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-        <button class="btn-primary" id="btn-register" onclick="doRegister()">Solicitar acesso</button>
+        <div class="form-group"><label>Senha</label><input type="password" id="reg-password" placeholder="Crie uma senha"/></div>
+        <button class="btn-primary" id="btn-register">Solicitar acesso</button>
         <div class="auth-msg" id="register-msg"></div>
       </div>
     </div>
@@ -134,7 +140,7 @@
       <div class="header-right">
         <span class="user-name" id="user-name"></span>
         <div class="status-pill" id="status-pill"><div class="status-dot"></div><span id="status-text">Carregando</span></div>
-        <button class="btn-logout" onclick="doLogout()">Sair</button>
+        <button class="btn-logout" id="btn-logout">Sair</button>
       </div>
     </header>
     <main class="main-area">
@@ -142,23 +148,22 @@
         <div class="overlay" id="loading-overlay">
           <div class="spinner" id="loading-spinner"></div>
           <div class="overlay-text" id="loading-text">Carregando relatorio...</div>
-          <button class="overlay-retry" id="retry-btn" onclick="loadReport()">Tentar novamente</button>
+          <button class="overlay-retry" id="retry-btn">Tentar novamente</button>
         </div>
         <div id="report-container"></div>
       </div>
     </main>
-    <button class="fab" onclick="toggleNotes()">
+    <button class="fab" id="fab-btn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1H8v-1zm0 3h8v1H8v-1zm0-6h5v1H8v-1z"/></svg>
       Lista de Pecas
       <span class="fab-badge" id="fab-badge" style="display:none">0</span>
     </button>
     <div class="notes-panel" id="notes-panel">
       <div class="notes-header">
-        <span class="notes-title">&#128203; Consulta de Pecas</span>
-        <button class="notes-close" onclick="toggleNotes()">&#215;</button>
+        <span class="notes-title">Consulta de Pecas</span>
+        <button class="notes-close" id="notes-close">x</button>
       </div>
       <div class="notes-body">
-        <!-- Campos de identificacao -->
         <div class="notes-meta">
           <div class="notes-meta-field">
             <span class="notes-meta-label">Solicitante</span>
@@ -173,10 +178,12 @@
             <input class="notes-meta-input" id="notes-previsao" type="date"/>
           </div>
         </div>
-        <!-- Adicionar pecas -->
-        <div class="notes-input-row">
-          <input class="notes-input" id="peca-input" type="text" placeholder="Codigo da peca (ex: 1234-A)" onkeydown="if(event.key==='Enter')addPeca()"/>
-          <button class="btn-add" onclick="addPeca()">+ Add</button>
+        <div class="peca-input-area">
+          <div class="peca-input-row1">
+            <input class="input-codigo" id="peca-codigo" type="text" placeholder="Codigo (ex: 1234-A)"/>
+            <input class="input-nome" id="peca-nome" type="text" placeholder="Nome do produto"/>
+          </div>
+          <button class="btn-add" id="btn-add-peca" style="width:100%">+ Adicionar Peca</button>
         </div>
         <div class="peca-list" id="peca-list">
           <div class="notes-empty">Nenhuma peca adicionada ainda</div>
@@ -184,57 +191,184 @@
       </div>
       <div class="notes-footer">
         <textarea class="notes-obs" id="notes-obs" rows="2" placeholder="Observacoes (opcional)..."></textarea>
-        <button class="btn-send" id="btn-send" onclick="sendList()">&#128231; Enviar para Expedicao</button>
+        <button class="btn-send" id="btn-send">Enviar para Expedicao</button>
         <div class="send-msg" id="send-msg"></div>
       </div>
     </div>
   </div>
   <script>
-    var API="https://powerbi-backend-production.up.railway.app";
-    var sessionToken=localStorage.getItem("session_token");
-    var userName=localStorage.getItem("user_name");
-    var pecas=[];
-    function showTab(tab){document.getElementById("tab-login").style.display=(tab==="login")?"":"none";document.getElementById("tab-register").style.display=(tab==="register")?"":"none";document.getElementById("tab-btn-login").classList.toggle("active",tab==="login");document.getElementById("tab-btn-register").classList.toggle("active",tab==="register");}
-    function showMsg(id,msg,type){var el=document.getElementById(id);el.textContent=msg;el.className="auth-msg "+type;}
-    function clearMsg(id){var el=document.getElementById(id);el.className="auth-msg";el.textContent="";}
-    function showLoadError(msg){document.getElementById("loading-spinner").style.display="none";document.getElementById("loading-text").textContent=msg;document.getElementById("retry-btn").style.display="block";}
-    function doLogin(){var email=document.getElementById("login-email").value.trim();var password=document.getElementById("login-password").value;if(!email||!password){showMsg("login-msg","Preencha email e senha","error");return;}var btn=document.getElementById("btn-login");btn.disabled=true;btn.textContent="Entrando...";clearMsg("login-msg");fetch(API+"/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:password})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){btn.disabled=false;btn.textContent="Entrar";if(res.status!==200){showMsg("login-msg",res.data.message||res.data.error||"Erro ao entrar",(res.data.error==="pending")?"info":"error");return;}sessionToken=res.data.token;userName=res.data.name;localStorage.setItem("session_token",sessionToken);localStorage.setItem("user_name",userName);showApp();}).catch(function(){btn.disabled=false;btn.textContent="Entrar";showMsg("login-msg","Erro de conexao","error");});}
-    function doRegister(){var name=document.getElementById("reg-name").value.trim();var email=document.getElementById("reg-email").value.trim();var company=document.getElementById("reg-company").value.trim();var password=document.getElementById("reg-password").value;if(!name||!email||!password){showMsg("register-msg","Preencha nome, email e senha","error");return;}var btn=document.getElementById("btn-register");btn.disabled=true;btn.textContent="Enviando...";clearMsg("register-msg");fetch(API+"/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,email:email,company:company,password:password})}).then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});}).then(function(res){btn.disabled=false;btn.textContent="Solicitar acesso";if(res.status!==200){showMsg("register-msg",res.data.error||"Erro ao cadastrar","error");return;}showMsg("register-msg",res.data.message||"Cadastro realizado! Aguarde aprovacao.","success");document.getElementById("reg-name").value="";document.getElementById("reg-email").value="";document.getElementById("reg-company").value="";document.getElementById("reg-password").value="";}).catch(function(){btn.disabled=false;btn.textContent="Solicitar acesso";showMsg("register-msg","Erro de conexao","error");});}
-    function doLogout(){fetch(API+"/auth/logout",{method:"POST",headers:{"x-session-token":sessionToken}}).catch(function(){});localStorage.removeItem("session_token");localStorage.removeItem("user_name");sessionToken=null;userName=null;document.getElementById("app-screen").style.display="none";document.getElementById("auth-screen").style.display="flex";}
-    function showApp(){document.getElementById("auth-screen").style.display="none";document.getElementById("app-screen").style.display="flex";document.getElementById("user-name").textContent=userName||"";document.getElementById("notes-solicitante").value=userName||"";loadReport();}
-    function loadReport(){document.getElementById("loading-spinner").style.display="block";document.getElementById("retry-btn").style.display="none";document.getElementById("loading-overlay").classList.remove("hidden");document.getElementById("loading-text").textContent="Carregando relatorio...";document.getElementById("status-text").textContent="Carregando";document.getElementById("status-pill").className="status-pill";fetch(API+"/getEmbedToken",{headers:{"x-session-token":sessionToken}}).then(function(r){if(r.status===401){doLogout();return null;}if(!r.ok){return r.json().then(function(d){throw new Error(d.error||"Erro HTTP "+r.status);});}return r.json();}).then(function(data){if(!data)return;if(!data.accessToken){showLoadError("Token de acesso nao recebido.");return;}if(!data.embedUrl){showLoadError("URL de embed nao recebida.");return;}var pbiClient=window["powerbi-client"];if(!pbiClient||!pbiClient.models){showLoadError("Biblioteca Power BI nao carregada.");return;}var models=pbiClient.models;var pbi=new pbiClient.service.Service(pbiClient.factories.hpmFactory,pbiClient.factories.wpmpFactory,pbiClient.factories.routerFactory);var container=document.getElementById("report-container");pbi.reset(container);try{var report=pbi.embed(container,{type:"report",tokenType:models.TokenType.Embed,accessToken:data.accessToken,embedUrl:data.embedUrl,id:data.reportId,settings:{navContentPaneEnabled:true,filterPaneEnabled:false,background:models.BackgroundType.Transparent}});report.on("loaded",function(){document.getElementById("loading-overlay").classList.add("hidden");document.getElementById("status-text").textContent="Ativo";document.getElementById("status-pill").className="status-pill live";});report.on("error",function(e){showLoadError("Erro: "+((e.detail&&e.detail.message)?e.detail.message:JSON.stringify(e.detail)));});}catch(embedErr){showLoadError("Erro ao inicializar: "+embedErr.message);}}).catch(function(e){showLoadError("Falha: "+e.message);});}
-    function toggleNotes(){var p=document.getElementById("notes-panel");p.classList.toggle("open");}
-    function updateBadge(){var b=document.getElementById("fab-badge");if(pecas.length>0){b.style.display="flex";b.textContent=pecas.length;}else{b.style.display="none";}}
-    function renderPecas(){var list=document.getElementById("peca-list");if(pecas.length===0){list.innerHTML='<div class="notes-empty">Nenhuma peca adicionada ainda</div>';return;}list.innerHTML=pecas.map(function(p,i){return'<div class="peca-item"><span class="peca-code">'+p+'</span><button class="peca-remove" onclick="removePeca('+i+')">&#215;</button></div>';}).join("");}
-    function addPeca(){var input=document.getElementById("peca-input");var val=input.value.trim().toUpperCase();if(!val)return;if(pecas.indexOf(val)!==-1){input.value="";return;}pecas.push(val);input.value="";renderPecas();updateBadge();document.getElementById("send-msg").className="send-msg";}
-    function removePeca(i){pecas.splice(i,1);renderPecas();updateBadge();}
+    var API = "https://powerbi-backend-production.up.railway.app";
+    var sessionToken = localStorage.getItem("session_token");
+    var userName = localStorage.getItem("user_name");
+    var pecas = [];
+
+    // Auth tabs
+    document.getElementById("tab-btn-login").addEventListener("click", function(){ showTab("login"); });
+    document.getElementById("tab-btn-register").addEventListener("click", function(){ showTab("register"); });
+    document.getElementById("btn-login").addEventListener("click", doLogin);
+    document.getElementById("btn-register").addEventListener("click", doRegister);
+    document.getElementById("login-password").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
+    document.getElementById("reg-password").addEventListener("keydown", function(e){ if(e.key==="Enter") doRegister(); });
+    document.getElementById("btn-logout").addEventListener("click", doLogout);
+    // Notes panel
+    document.getElementById("fab-btn").addEventListener("click", function(){ document.getElementById("notes-panel").classList.toggle("open"); });
+    document.getElementById("notes-close").addEventListener("click", function(){ document.getElementById("notes-panel").classList.remove("open"); });
+    document.getElementById("btn-add-peca").addEventListener("click", addPeca);
+    document.getElementById("peca-codigo").addEventListener("keydown", function(e){ if(e.key==="Enter") document.getElementById("peca-nome").focus(); });
+    document.getElementById("peca-nome").addEventListener("keydown", function(e){ if(e.key==="Enter") addPeca(); });
+    document.getElementById("btn-send").addEventListener("click", sendList);
+    document.getElementById("retry-btn").addEventListener("click", loadReport);
+
+    function showTab(tab){
+      document.getElementById("tab-login").style.display = (tab==="login") ? "" : "none";
+      document.getElementById("tab-register").style.display = (tab==="register") ? "" : "none";
+      document.getElementById("tab-btn-login").classList.toggle("active", tab==="login");
+      document.getElementById("tab-btn-register").classList.toggle("active", tab==="register");
+    }
+    function showMsg(id,msg,type){ var el=document.getElementById(id); el.textContent=msg; el.className="auth-msg "+type; }
+    function clearMsg(id){ var el=document.getElementById(id); el.className="auth-msg"; el.textContent=""; }
+    function showLoadError(msg){
+      document.getElementById("loading-spinner").style.display="none";
+      document.getElementById("loading-text").textContent=msg;
+      document.getElementById("retry-btn").style.display="block";
+    }
+
+    function doLogin(){
+      var email=document.getElementById("login-email").value.trim();
+      var pw=document.getElementById("login-password").value;
+      if(!email||!pw){showMsg("login-msg","Preencha email e senha","error");return;}
+      var btn=document.getElementById("btn-login"); btn.disabled=true; btn.textContent="Entrando..."; clearMsg("login-msg");
+      fetch(API+"/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw})})
+      .then(function(r){return r.json().then(function(d){return{s:r.status,d:d};});})
+      .then(function(res){
+        btn.disabled=false; btn.textContent="Entrar";
+        if(res.s!==200){showMsg("login-msg",res.d.message||res.d.error||"Erro ao entrar",(res.d.error==="pending")?"info":"error");return;}
+        sessionToken=res.d.token; userName=res.d.name;
+        localStorage.setItem("session_token",sessionToken); localStorage.setItem("user_name",userName);
+        showApp();
+      }).catch(function(){btn.disabled=false;btn.textContent="Entrar";showMsg("login-msg","Erro de conexao","error");});
+    }
+
+    function doRegister(){
+      var name=document.getElementById("reg-name").value.trim();
+      var email=document.getElementById("reg-email").value.trim();
+      var company=document.getElementById("reg-company").value.trim();
+      var pw=document.getElementById("reg-password").value;
+      if(!name||!email||!pw){showMsg("register-msg","Preencha nome, email e senha","error");return;}
+      var btn=document.getElementById("btn-register"); btn.disabled=true; btn.textContent="Enviando..."; clearMsg("register-msg");
+      fetch(API+"/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,email:email,company:company,password:pw})})
+      .then(function(r){return r.json().then(function(d){return{s:r.status,d:d};});})
+      .then(function(res){
+        btn.disabled=false; btn.textContent="Solicitar acesso";
+        if(res.s!==200){showMsg("register-msg",res.d.error||"Erro ao cadastrar","error");return;}
+        showMsg("register-msg",res.d.message||"Cadastro realizado! Aguarde aprovacao.","success");
+        ["reg-name","reg-email","reg-company","reg-password"].forEach(function(id){document.getElementById(id).value="";});
+      }).catch(function(){btn.disabled=false;btn.textContent="Solicitar acesso";showMsg("register-msg","Erro de conexao","error");});
+    }
+
+    function doLogout(){
+      fetch(API+"/auth/logout",{method:"POST",headers:{"x-session-token":sessionToken}}).catch(function(){});
+      localStorage.removeItem("session_token"); localStorage.removeItem("user_name");
+      sessionToken=null; userName=null;
+      document.getElementById("app-screen").style.display="none";
+      document.getElementById("auth-screen").style.display="flex";
+    }
+
+    function showApp(){
+      document.getElementById("auth-screen").style.display="none";
+      document.getElementById("app-screen").style.display="flex";
+      document.getElementById("user-name").textContent=userName||"";
+      document.getElementById("notes-solicitante").value=userName||"";
+      loadReport();
+    }
+
+    function loadReport(){
+      document.getElementById("loading-spinner").style.display="block";
+      document.getElementById("retry-btn").style.display="none";
+      document.getElementById("loading-overlay").classList.remove("hidden");
+      document.getElementById("loading-text").textContent="Carregando relatorio...";
+      document.getElementById("status-text").textContent="Carregando";
+      document.getElementById("status-pill").className="status-pill";
+      fetch(API+"/getEmbedToken",{headers:{"x-session-token":sessionToken}})
+      .then(function(r){if(r.status===401){doLogout();return null;}if(!r.ok){return r.json().then(function(d){throw new Error(d.error||"HTTP "+r.status);});}return r.json();})
+      .then(function(data){
+        if(!data)return;
+        if(!data.accessToken){showLoadError("Token nao recebido.");return;}
+        if(!data.embedUrl){showLoadError("URL de embed nao recebida.");return;}
+        var pbi=window["powerbi-client"];
+        if(!pbi||!pbi.models){showLoadError("Biblioteca Power BI nao carregada.");return;}
+        var models=pbi.models;
+        var svc=new pbi.service.Service(pbi.factories.hpmFactory,pbi.factories.wpmpFactory,pbi.factories.routerFactory);
+        var cont=document.getElementById("report-container");
+        svc.reset(cont);
+        try{
+          var report=svc.embed(cont,{type:"report",tokenType:models.TokenType.Embed,accessToken:data.accessToken,embedUrl:data.embedUrl,id:data.reportId,settings:{navContentPaneEnabled:true,filterPaneEnabled:false,background:models.BackgroundType.Transparent}});
+          report.on("loaded",function(){document.getElementById("loading-overlay").classList.add("hidden");document.getElementById("status-text").textContent="Ativo";document.getElementById("status-pill").className="status-pill live";});
+          report.on("error",function(e){showLoadError("Erro: "+((e.detail&&e.detail.message)?e.detail.message:JSON.stringify(e.detail)));});
+        }catch(err){showLoadError("Erro ao inicializar: "+err.message);}
+      }).catch(function(e){showLoadError("Falha: "+e.message);});
+    }
+
+    function updateBadge(){
+      var b=document.getElementById("fab-badge");
+      if(pecas.length>0){b.style.display="flex";b.textContent=pecas.length;}else{b.style.display="none";}
+    }
+    function renderPecas(){
+      var list=document.getElementById("peca-list");
+      if(!pecas.length){list.innerHTML="<div class='notes-empty'>Nenhuma peca adicionada ainda</div>";return;}
+      list.innerHTML="";
+      pecas.forEach(function(p,i){
+        var item=document.createElement("div");
+        item.className="peca-item";
+        item.innerHTML="<div class='peca-info'><div class='peca-code'>"+p.code+"</div>"+(p.nome?"<div class='peca-nome'>"+p.nome+"</div>":"")+"</div>";
+        var rm=document.createElement("button");
+        rm.className="peca-remove"; rm.textContent="x";
+        rm.addEventListener("click",function(){ pecas.splice(i,1); renderPecas(); updateBadge(); });
+        item.appendChild(rm);
+        list.appendChild(item);
+      });
+    }
+    function addPeca(){
+      var codigo=document.getElementById("peca-codigo").value.trim().toUpperCase();
+      var nome=document.getElementById("peca-nome").value.trim();
+      if(!codigo)return;
+      var existe=pecas.some(function(p){return p.code===codigo;});
+      if(existe){document.getElementById("peca-codigo").value="";return;}
+      pecas.push({code:codigo,nome:nome});
+      document.getElementById("peca-codigo").value="";
+      document.getElementById("peca-nome").value="";
+      document.getElementById("peca-codigo").focus();
+      renderPecas(); updateBadge();
+      document.getElementById("send-msg").className="send-msg";
+    }
+
     function sendList(){
-      if(pecas.length===0){alert("Adicione pelo menos uma peca antes de enviar.");return;}
+      if(!pecas.length){alert("Adicione pelo menos uma peca antes de enviar.");return;}
       var cliente=document.getElementById("notes-cliente").value.trim();
       var previsao=document.getElementById("notes-previsao").value;
       var obs=document.getElementById("notes-obs").value.trim();
-      var btn=document.getElementById("btn-send");
-      btn.disabled=true;btn.textContent="Enviando...";
-      fetch(API+"/send-list",{method:"POST",headers:{"Content-Type":"application/json","x-session-token":sessionToken},body:JSON.stringify({pecas:pecas,obs:obs,cliente:cliente,previsao:previsao,userName:userName})})
-      .then(function(r){return r.json().then(function(d){return{status:r.status,data:d};});})
+      var btn=document.getElementById("btn-send"); btn.disabled=true; btn.textContent="Enviando...";
+      fetch(API+"/send-list",{method:"POST",headers:{"Content-Type":"application/json","x-session-token":sessionToken},body:JSON.stringify({pecas:pecas,obs:obs,cliente:cliente,previsao:previsao})})
+      .then(function(r){return r.json().then(function(d){return{s:r.status,d:d};});})
       .then(function(res){
-        btn.disabled=false;btn.textContent="&#128231; Enviar para Expedicao";
+        btn.disabled=false; btn.textContent="Enviar para Expedicao";
         var msg=document.getElementById("send-msg");
-        if(res.status===200){
-          msg.textContent="&#10003; Enviado com sucesso para a expedicao!";
-          msg.className="send-msg ok";
-          pecas=[];renderPecas();updateBadge();
+        if(res.s===200){
+          msg.textContent="Enviado com sucesso para a expedicao!"; msg.className="send-msg ok";
+          pecas=[]; renderPecas(); updateBadge();
           document.getElementById("notes-cliente").value="";
           document.getElementById("notes-previsao").value="";
           document.getElementById("notes-obs").value="";
-        }else{
-          msg.textContent="Erro: "+(res.data.error||"tente novamente");
-          msg.className="send-msg err";
-        }
-      })
-      .catch(function(){btn.disabled=false;btn.textContent="&#128231; Enviar para Expedicao";var msg=document.getElementById("send-msg");msg.textContent="Erro de conexao.";msg.className="send-msg err";});
+        }else{msg.textContent="Erro: "+(res.d.error||"tente novamente"); msg.className="send-msg err";}
+      }).catch(function(){btn.disabled=false;btn.textContent="Enviar para Expedicao";var msg=document.getElementById("send-msg");msg.textContent="Erro de conexao.";msg.className="send-msg err";});
     }
-    if(sessionToken){fetch(API+"/auth/me",{headers:{"x-session-token":sessionToken}}).then(function(r){return r.json();}).then(function(d){if(d.status==="approved"){showApp();}else{localStorage.clear();}}).catch(function(){localStorage.clear();});}
+
+    if(sessionToken){
+      fetch(API+"/auth/me",{headers:{"x-session-token":sessionToken}})
+      .then(function(r){return r.json();})
+      .then(function(d){if(d.status==="approved"){showApp();}else{localStorage.clear();}})
+      .catch(function(){localStorage.clear();});
+    }
   </script>
 </body>
 </html>
