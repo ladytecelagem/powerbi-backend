@@ -21,16 +21,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f5;
 .btn{padding:11px 20px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
 .btn:hover{opacity:.85}
 .btn-dark{background:#1d1d1f;color:white;width:100%;margin-top:4px}
-.btn-approve{background:#e6f9ee;color:#006600;border:1px solid #99e6aa;font-size:13px;padding:6px 12px}
-.btn-reject{background:#fff2f2;color:#cc0000;border:1px solid #ffcccc;font-size:13px;padding:6px 12px}
+.btn-approve{background:#e6f9ee;color:#006600;border:1px solid #99e6aa;font-size:13px;padding:6px 12px;border-radius:8px}
+.btn-reject{background:#fff2f2;color:#cc0000;border:1px solid #ffcccc;font-size:13px;padding:6px 12px;border-radius:8px}
+.btn-approve:hover,.btn-reject:hover{opacity:.8}
 .error-msg{margin-top:12px;padding:10px 14px;background:#fff2f2;color:#cc0000;border-radius:8px;font-size:13px;display:none}
 #admin-screen{display:none}
-.header{background:white;border-bottom:1px solid rgba(0,0,0,.08);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.header-left{display:flex;align-items:center;gap:10px}
-.header-icon{width:28px;height:28px;border-radius:7px;background:#1d1d1f;display:flex;align-items:center;justify-content:center}
-.header-icon svg{width:14px;height:14px;fill:white}
-.header-title{font-size:15px;font-weight:700}
-.btn-logout-sm{padding:6px 14px;background:transparent;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;cursor:pointer}
+.topbar{background:white;border-bottom:1px solid rgba(0,0,0,.08);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-icon{width:28px;height:28px;border-radius:7px;background:#1d1d1f;display:flex;align-items:center;justify-content:center}
+.topbar-icon svg{width:14px;height:14px;fill:white}
+.topbar-title{font-size:15px;font-weight:700}
+.btn-out{padding:6px 14px;background:transparent;border:1px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;cursor:pointer}
 .content{max-width:960px;margin:0 auto;padding:28px 20px}
 .admin-tabs{display:flex;margin-bottom:24px;border-radius:10px;background:#e8e8ed;padding:3px;width:fit-content}
 .admin-tab{padding:8px 20px;font-size:14px;font-weight:500;cursor:pointer;border-radius:8px;color:#6e6e73;border:none;background:transparent;transition:all .2s}
@@ -39,42 +40,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f5;
 .stat-card{background:white;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
 .stat-num{font-size:32px;font-weight:700;line-height:1;margin-bottom:4px}
 .stat-label{font-size:13px;color:#6e6e73}
-.stat-pending .stat-num{color:#cc7700}
-.stat-approved .stat-num{color:#006600}
-.stat-rejected .stat-num{color:#cc0000}
+.sp .stat-num{color:#cc7700}
+.sa .stat-num{color:#006600}
+.sr .stat-num{color:#cc0000}
 .filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.filter-btn{padding:7px 16px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(0,0,0,.12);background:white;color:#6e6e73;transition:all .15s}
-.filter-btn.active{background:#1d1d1f;color:white;border-color:#1d1d1f}
-.section-title{font-size:17px;font-weight:700;margin-bottom:14px}
-.user-list{display:flex;flex-direction:column;gap:10px}
-.user-card{background:white;border-radius:14px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;align-items:center;gap:14px}
-.uavatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
-.av-pending{background:#fff3d6;color:#cc7700}
-.av-approved{background:#e6f9ee;color:#006600}
-.av-rejected{background:#fff2f2;color:#cc0000}
+.fbtn{padding:7px 16px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(0,0,0,.12);background:white;color:#6e6e73;transition:all .15s}
+.fbtn.active{background:#1d1d1f;color:white;border-color:#1d1d1f}
+.sec-title{font-size:17px;font-weight:700;margin-bottom:14px}
+.ulist{display:flex;flex-direction:column;gap:10px}
+.ucard{background:white;border-radius:14px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;align-items:center;gap:14px}
+.uav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.avp{background:#fff3d6;color:#cc7700}
+.ava{background:#e6f9ee;color:#006600}
+.avr{background:#fff2f2;color:#cc0000}
 .uinfo{flex:1;min-width:0}
-.uname{font-size:15px;font-weight:600}
-.uemail{font-size:13px;color:#6e6e73}
-.ucompany{font-size:12px;color:#aaa;margin-top:1px}
-.udate{font-size:11px;color:#bbb;margin-top:3px}
-.uactions{display:flex;gap:8px;flex-shrink:0}
+.un{font-size:15px;font-weight:600}
+.ue{font-size:13px;color:#6e6e73}
+.uco{font-size:12px;color:#aaa;margin-top:1px}
+.ud{font-size:11px;color:#bbb;margin-top:3px}
+.uact{display:flex;gap:8px;flex-shrink:0}
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:500}
-.badge-ok{background:#e6f9ee;color:#006600}
-.badge-no{background:#fff2f2;color:#cc0000}
-.hist-wrap{overflow-x:auto}
-.hist-table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.hist-table th{padding:11px 14px;text-align:left;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:.04em;background:#f5f5f7;border-bottom:1px solid rgba(0,0,0,.06)}
-.hist-table td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:top}
-.hist-table tr:last-child td{border-bottom:none}
-.hist-table tr:hover td{background:#fafafa}
-.pecas-wrap{display:flex;flex-wrap:wrap;gap:4px;max-width:200px}
-.peca-tag{background:#f0f0f5;border-radius:4px;padding:2px 6px;font-family:monospace;font-size:11px;font-weight:600}
-.s-ok{color:#006600;font-weight:600}
-.s-sim{color:#cc7700}
-.s-err{color:#cc0000;font-size:11px}
+.bok{background:#e6f9ee;color:#006600}
+.bno{background:#fff2f2;color:#cc0000}
+.hwrap{overflow-x:auto}
+.htable{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.htable th{padding:11px 14px;text-align:left;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:.04em;background:#f5f5f7;border-bottom:1px solid rgba(0,0,0,.06)}
+.htable td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:top}
+.htable tr:last-child td{border-bottom:none}
+.htable tr:hover td{background:#fafafa}
+.pwrap{display:flex;flex-wrap:wrap;gap:4px;max-width:180px}
+.ptag{background:#f0f0f5;border-radius:4px;padding:2px 6px;font-family:monospace;font-size:11px;font-weight:600}
+.sok{color:#006600;font-weight:600}
+.ssim{color:#cc7700}
+.serr{color:#cc0000;font-size:11px}
 .empty{text-align:center;padding:40px;color:#aaa;font-size:15px}
-.loading-txt{text-align:center;padding:40px;color:#aaa}
-.hist-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ltxt{text-align:center;padding:40px;color:#aaa}
+.htopbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .toast{position:fixed;bottom:24px;right:24px;background:#1d1d1f;color:white;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;z-index:100;pointer-events:none}
 .toast.show{opacity:1}
 </style>
@@ -88,141 +89,219 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f5;
     </div>
     <div class="login-title">Acesso restrito</div>
     <div class="login-sub">Entre com a senha de administrador</div>
-    <div class="form-group"><label>Senha</label><input type="password" id="admin-pw" placeholder="Sua senha admin" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <button class="btn btn-dark" onclick="doLogin()">Entrar</button>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="admin-pw" placeholder="Sua senha admin"/>
+    </div>
+    <button class="btn btn-dark" id="btn-entrar">Entrar</button>
     <div class="error-msg" id="login-err">Senha incorreta.</div>
   </div>
 </div>
 <div id="admin-screen">
-  <div class="header">
-    <div class="header-left">
-      <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z"/></svg></div>
-      <div class="header-title">Painel Admin - LADY BI</div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z"/></svg></div>
+      <div class="topbar-title">Painel Admin - LADY BI</div>
     </div>
-    <button class="btn-logout-sm" onclick="doLogout()">Sair</button>
+    <button class="btn-out" id="btn-out">Sair</button>
   </div>
   <div class="content">
     <div class="admin-tabs">
-      <button class="admin-tab active" id="tab-u" onclick="showTab('u')">Usuarios</button>
-      <button class="admin-tab" id="tab-h" onclick="showTab('h')">Historico de Envios</button>
+      <button class="admin-tab active" id="tab-u">Usuarios</button>
+      <button class="admin-tab" id="tab-h">Historico de Envios</button>
     </div>
     <div id="panel-u">
       <div class="stats">
-        <div class="stat-card stat-pending"><div class="stat-num" id="cp">0</div><div class="stat-label">Pendentes</div></div>
-        <div class="stat-card stat-approved"><div class="stat-num" id="ca">0</div><div class="stat-label">Aprovados</div></div>
-        <div class="stat-card stat-rejected"><div class="stat-num" id="cr">0</div><div class="stat-label">Rejeitados</div></div>
+        <div class="stat-card sp"><div class="stat-num" id="cp">0</div><div class="stat-label">Pendentes</div></div>
+        <div class="stat-card sa"><div class="stat-num" id="ca">0</div><div class="stat-label">Aprovados</div></div>
+        <div class="stat-card sr"><div class="stat-num" id="cr">0</div><div class="stat-label">Rejeitados</div></div>
       </div>
       <div class="filter-bar">
-        <button class="filter-btn active" onclick="setF('all',this)">Todos</button>
-        <button class="filter-btn" onclick="setF('pending',this)">Pendentes</button>
-        <button class="filter-btn" onclick="setF('approved',this)">Aprovados</button>
-        <button class="filter-btn" onclick="setF('rejected',this)">Rejeitados</button>
+        <button class="fbtn active" data-f="all">Todos</button>
+        <button class="fbtn" data-f="pending">Pendentes</button>
+        <button class="fbtn" data-f="approved">Aprovados</button>
+        <button class="fbtn" data-f="rejected">Rejeitados</button>
       </div>
-      <div class="section-title" id="ltitle">Todos os usuarios</div>
-      <div class="user-list" id="ulist"><div class="loading-txt">Carregando...</div></div>
+      <div class="sec-title" id="ltitle">Todos os usuarios</div>
+      <div class="ulist" id="ulist"><div class="ltxt">Carregando...</div></div>
     </div>
     <div id="panel-h" style="display:none">
-      <div class="hist-topbar">
-        <div class="section-title" style="margin:0">Historico de Envios</div>
-        <button class="filter-btn" onclick="loadHist()">Atualizar</button>
+      <div class="htopbar">
+        <div class="sec-title" style="margin:0">Historico de Envios</div>
+        <button class="fbtn" id="btn-refresh-h">Atualizar</button>
       </div>
-      <div class="hist-wrap"><div id="hcont"><div class="loading-txt">Carregando...</div></div></div>
+      <div class="hwrap"><div id="hcont"><div class="ltxt">Carregando...</div></div></div>
     </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
-var API="https://powerbi-backend-production.up.railway.app";
-var tok=sessionStorage.getItem("admin_token");
-var users=[];
-var filt="all";
-if(tok)init();
-function doLogin(){
-  var pw=document.getElementById("admin-pw").value;
-  if(!pw)return;
-  fetch(API+"/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pw})})
-  .then(function(r){return r.json().then(function(d){return{s:r.status,d:d};});})
-  .then(function(res){
-    if(res.s!==200){document.getElementById("login-err").style.display="block";return;}
-    tok=res.d.token;sessionStorage.setItem("admin_token",tok);
-    document.getElementById("login-err").style.display="none";init();
-  }).catch(function(){document.getElementById("login-err").style.display="block";});
-}
-function doLogout(){sessionStorage.removeItem("admin_token");tok=null;document.getElementById("admin-screen").style.display="none";document.getElementById("login-screen").style.display="flex";}
-function init(){document.getElementById("login-screen").style.display="none";document.getElementById("admin-screen").style.display="block";loadUsers();}
-function showTab(t){
-  document.getElementById("panel-u").style.display=(t==="u")?"":"none";
-  document.getElementById("panel-h").style.display=(t==="h")?"":"none";
-  document.getElementById("tab-u").classList.toggle("active",t==="u");
-  document.getElementById("tab-h").classList.toggle("active",t==="h");
-  if(t==="h")loadHist();
-}
-function loadUsers(){
-  fetch(API+"/admin/users",{headers:{"x-session-token":tok}})
-  .then(function(r){if(r.status===403){doLogout();return null;}return r.json();})
-  .then(function(data){
-    if(!data)return;users=data;
-    document.getElementById("cp").textContent=data.filter(function(u){return u.status==="pending";}).length;
-    document.getElementById("ca").textContent=data.filter(function(u){return u.status==="approved";}).length;
-    document.getElementById("cr").textContent=data.filter(function(u){return u.status==="rejected";}).length;
+var API = "https://powerbi-backend-production.up.railway.app";
+var tok = sessionStorage.getItem("admin_token");
+var allUsers = [];
+var curF = "all";
+
+// Eventos - sem onclick inline para evitar problemas de aspas
+document.getElementById("btn-entrar").addEventListener("click", doLogin);
+document.getElementById("admin-pw").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
+document.getElementById("btn-out").addEventListener("click", doLogout);
+document.getElementById("tab-u").addEventListener("click", function(){ showTab("u"); });
+document.getElementById("tab-h").addEventListener("click", function(){ showTab("h"); });
+document.getElementById("btn-refresh-h").addEventListener("click", loadHist);
+document.querySelectorAll(".fbtn[data-f]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".fbtn[data-f]").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    curF = btn.getAttribute("data-f");
+    var titles = {all:"Todos os usuarios",pending:"Pendentes",approved:"Aprovados",rejected:"Rejeitados"};
+    document.getElementById("ltitle").textContent = titles[curF];
     renderUsers();
-  }).catch(function(){document.getElementById("ulist").innerHTML="<div class='empty'>Erro ao carregar</div>";});
+  });
+});
+
+if(tok) init();
+
+function doLogin(){
+  var pw = document.getElementById("admin-pw").value;
+  if(!pw) return;
+  var btn = document.getElementById("btn-entrar");
+  btn.textContent = "Entrando..."; btn.disabled = true;
+  fetch(API+"/admin/login", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({password:pw})})
+  .then(function(r){ return r.json().then(function(d){ return {s:r.status,d:d}; }); })
+  .then(function(res){
+    btn.textContent = "Entrar"; btn.disabled = false;
+    if(res.s !== 200){ document.getElementById("login-err").style.display = "block"; return; }
+    tok = res.d.token;
+    sessionStorage.setItem("admin_token", tok);
+    document.getElementById("login-err").style.display = "none";
+    init();
+  })
+  .catch(function(){ btn.textContent="Entrar"; btn.disabled=false; document.getElementById("login-err").style.display="block"; });
 }
-function setF(f,btn){filt=f;document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("active");});btn.classList.add("active");var t={all:"Todos os usuarios",pending:"Pendentes",approved:"Aprovados",rejected:"Rejeitados"};document.getElementById("ltitle").textContent=t[f];renderUsers();}
-function renderUsers(){
-  var list=filt==="all"?users:users.filter(function(u){return u.status===filt;});
-  list=list.slice().sort(function(a,b){var o={pending:0,approved:1,rejected:2};return(o[a.status]||0)-(o[b.status]||0)||new Date(b.createdAt)-new Date(a.createdAt);});
-  var el=document.getElementById("ulist");
-  if(!list.length){el.innerHTML="<div class='empty'>Nenhum usuario</div>";return;}
-  el.innerHTML=list.map(function(u){
-    var ini=u.name?u.name.charAt(0).toUpperCase():u.email.charAt(0).toUpperCase();
-    var dt=new Date(u.createdAt).toLocaleString("pt-BR");
-    var em=u.email;
-    var acts;
-    if(u.status==="pending"){
-      acts="<button class='btn btn-approve' onclick='ap(""+em+"")'>Aprovar</button><button class='btn btn-reject' onclick='rj(""+em+"")'>Rejeitar</button>";
-    }else if(u.status==="approved"){
-      acts="<span class='badge badge-ok'>Aprovado</span><button class='btn btn-reject' onclick='rj(""+em+"")' style='margin-left:8px'>Revogar</button>";
-    }else{
-      acts="<span class='badge badge-no'>Rejeitado</span><button class='btn btn-approve' onclick='ap(""+em+"")' style='margin-left:8px'>Aprovar</button>";
-    }
-    return "<div class='user-card'><div class='uavatar av-"+u.status+"'>"
-      +ini+"</div><div class='uinfo'><div class='uname'>"+u.name+"</div>"
-      +"<div class='uemail'>"+u.email+"</div>"
-      +(u.company?"<div class='ucompany'>"+u.company+"</div>":"")+"<div class='udate'>Cadastrado em "+dt+"</div>"
-      +"</div><div class='uactions'>"+acts+"</div></div>";
-  }).join("");
+
+function doLogout(){
+  sessionStorage.removeItem("admin_token"); tok = null;
+  document.getElementById("admin-screen").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
 }
-function ap(em){fetch(API+"/admin/approve/"+encodeURIComponent(em),{method:"POST",headers:{"x-session-token":tok}}).then(function(r){if(r.ok){toast("Aprovado!");loadUsers();}});}
-function rj(em){fetch(API+"/admin/reject/"+encodeURIComponent(em),{method:"POST",headers:{"x-session-token":tok}}).then(function(r){if(r.ok){toast("Rejeitado!");loadUsers();}});}
-function loadHist(){
-  var el=document.getElementById("hcont");
-  el.innerHTML="<div class='loading-txt'>Carregando...</div>";
-  fetch(API+"/admin/email-history",{headers:{"x-session-token":tok}})
-  .then(function(r){if(r.status===403){doLogout();return null;}return r.json();})
+
+function init(){
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("admin-screen").style.display = "block";
+  loadUsers();
+}
+
+function showTab(t){
+  document.getElementById("panel-u").style.display = (t==="u") ? "" : "none";
+  document.getElementById("panel-h").style.display = (t==="h") ? "" : "none";
+  document.getElementById("tab-u").classList.toggle("active", t==="u");
+  document.getElementById("tab-h").classList.toggle("active", t==="h");
+  if(t==="h") loadHist();
+}
+
+function loadUsers(){
+  fetch(API+"/admin/users", {headers:{"x-session-token":tok}})
+  .then(function(r){ if(r.status===403){doLogout();return null;} return r.json(); })
   .then(function(data){
-    if(!data)return;
-    if(!data.length){el.innerHTML="<div class='empty'>Nenhum envio registrado</div>";return;}
-    var h="<table class='hist-table'><thead><tr>"
+    if(!data) return;
+    allUsers = data;
+    document.getElementById("cp").textContent = data.filter(function(u){return u.status==="pending";}).length;
+    document.getElementById("ca").textContent = data.filter(function(u){return u.status==="approved";}).length;
+    document.getElementById("cr").textContent = data.filter(function(u){return u.status==="rejected";}).length;
+    renderUsers();
+  })
+  .catch(function(){ document.getElementById("ulist").innerHTML = "<div class='empty'>Erro ao carregar</div>"; });
+}
+
+function renderUsers(){
+  var list = curF==="all" ? allUsers : allUsers.filter(function(u){ return u.status===curF; });
+  list = list.slice().sort(function(a,b){
+    var o = {pending:0,approved:1,rejected:2};
+    return (o[a.status]||0)-(o[b.status]||0) || new Date(b.createdAt)-new Date(a.createdAt);
+  });
+  var el = document.getElementById("ulist");
+  if(!list.length){ el.innerHTML = "<div class='empty'>Nenhum usuario</div>"; return; }
+  // Cria cards sem strings de onclick complexas
+  el.innerHTML = "";
+  list.forEach(function(u){
+    var card = document.createElement("div");
+    card.className = "ucard";
+    var ini = (u.name||u.email).charAt(0).toUpperCase();
+    var avCls = {pending:"avp",approved:"ava",rejected:"avr"}[u.status]||"avp";
+    var dt = new Date(u.createdAt).toLocaleString("pt-BR");
+    var infoHtml = "<div class='un'>"+u.name+"</div><div class='ue'>"+u.email+"</div>"
+      +(u.company?"<div class='uco'>"+u.company+"</div>":"")+"<div class='ud'>Cadastrado em "+dt+"</div>";
+    card.innerHTML = "<div class='uav "+avCls+"'>"+ ini +"</div><div class='uinfo'>"+infoHtml+"</div><div class='uact' id='act-"+encodeURIComponent(u.email)+"'></div>";
+    el.appendChild(card);
+    var actDiv = card.querySelector(".uact");
+    if(u.status==="pending"){
+      var bA = makeBtn("btn-approve","Aprovar",u.email,"ap");
+      var bR = makeBtn("btn-reject","Rejeitar",u.email,"rj");
+      actDiv.appendChild(bA); actDiv.appendChild(bR);
+    } else if(u.status==="approved"){
+      actDiv.innerHTML = "<span class='badge bok'>Aprovado</span>";
+      actDiv.appendChild(makeBtn("btn-reject","Revogar",u.email,"rj"));
+    } else {
+      actDiv.innerHTML = "<span class='badge bno'>Rejeitado</span>";
+      actDiv.appendChild(makeBtn("btn-approve","Aprovar",u.email,"ap"));
+    }
+  });
+}
+
+function makeBtn(cls, label, email, action){
+  var b = document.createElement("button");
+  b.className = cls; b.textContent = label;
+  b.addEventListener("click", function(){
+    if(action==="ap") doApprove(email);
+    else doReject(email);
+  });
+  return b;
+}
+
+function doApprove(email){
+  fetch(API+"/admin/approve/"+encodeURIComponent(email), {method:"POST",headers:{"x-session-token":tok}})
+  .then(function(r){ if(r.ok){ toast("Aprovado!"); loadUsers(); } });
+}
+function doReject(email){
+  fetch(API+"/admin/reject/"+encodeURIComponent(email), {method:"POST",headers:{"x-session-token":tok}})
+  .then(function(r){ if(r.ok){ toast("Rejeitado!"); loadUsers(); } });
+}
+
+function loadHist(){
+  var el = document.getElementById("hcont");
+  el.innerHTML = "<div class='ltxt'>Carregando...</div>";
+  fetch(API+"/admin/email-history", {headers:{"x-session-token":tok}})
+  .then(function(r){ if(r.status===403){doLogout();return null;} return r.json(); })
+  .then(function(data){
+    if(!data) return;
+    if(!data.length){ el.innerHTML="<div class='empty'>Nenhum envio registrado</div>"; return; }
+    var h = "<table class='htable'><thead><tr>"
       +"<th>Data/Hora</th><th>Solicitante</th><th>Cliente</th><th>Previsao</th><th>Pecas</th><th>Observacoes</th><th>Status</th>"
       +"</tr></thead><tbody>";
     data.forEach(function(r){
-      var ptags=(r.pecas||[]).map(function(p){return"<span class='peca-tag'>"+p+"</span>";}).join("");
-      var sc=r.status==="enviado"?"s-ok":(r.status==="simulado"?"s-sim":"s-err");
-      var sl=r.status==="enviado"?"Enviado":(r.status==="simulado"?"Simulado":r.status);
-      h+="<tr><td style='white-space:nowrap;color:#888;font-size:12px'>"+r.dataHora+"</td>"
-        +"<td><b>"+r.solicitante+"</b><div style='color:#aaa;font-size:11px'>"+r.email+"</div></td>"
+      var pt = (r.pecas||[]).map(function(p){ return "<span class='ptag'>"+p+"</span>"; }).join("");
+      var sc = r.status==="enviado" ? "sok" : (r.status==="simulado" ? "ssim" : "serr");
+      var sl = r.status==="enviado" ? "Enviado" : (r.status==="simulado" ? "Simulado" : "Erro");
+      h += "<tr>"
+        +"<td style='white-space:nowrap;color:#888;font-size:12px'>"+(r.dataHora||"")+"</td>"
+        +"<td><b>"+(r.solicitante||"")+"</b><div style='color:#aaa;font-size:11px'>"+(r.email||"")+"</div></td>"
         +"<td>"+(r.cliente||"—")+"</td>"
         +"<td style='font-size:12px'>"+(r.previsao||"—")+"</td>"
-        +"<td><div class='pecas-wrap'>"+ptags+"</div></td>"
+        +"<td><div class='pwrap'>"+pt+"</div></td>"
         +"<td style='font-size:12px;max-width:140px'>"+(r.obs||"—")+"</td>"
-        +"<td class='"+sc+"'>"+sl+"</td></tr>";
+        +"<td class='"+sc+"'>"+ sl +"</td></tr>";
     });
-    h+="</tbody></table>";
-    el.innerHTML=h;
-  }).catch(function(){el.innerHTML="<div class='empty'>Erro ao carregar</div>";});
+    h += "</tbody></table>";
+    el.innerHTML = h;
+  })
+  .catch(function(){ el.innerHTML="<div class='empty'>Erro ao carregar</div>"; });
 }
-function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2500);}
+
+function toast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 2500);
+}
 </script>
 </body>
 </html>
