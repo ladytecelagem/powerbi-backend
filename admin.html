@@ -24,6 +24,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f5;
 .btn-approve{background:#e6f9ee;color:#006600;border:1px solid #99e6aa;font-size:13px;padding:6px 12px;border-radius:8px}
 .btn-reject{background:#fff2f2;color:#cc0000;border:1px solid #ffcccc;font-size:13px;padding:6px 12px;border-radius:8px}
 .btn-approve:hover,.btn-reject:hover{opacity:.8}
+.btn-delete{background:#fff2f2;color:#cc0000;border:1px solid #ffcccc;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.btn-delete:hover{background:#ffdddd}
 .error-msg{margin-top:12px;padding:10px 14px;background:#fff2f2;color:#cc0000;border-radius:8px;font-size:13px;display:none}
 #admin-screen{display:none}
 .topbar{background:white;border-bottom:1px solid rgba(0,0,0,.08);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
@@ -245,6 +247,13 @@ function renderUsers(){
       actDiv.innerHTML = "<span class='badge bno'>Rejeitado</span>";
       actDiv.appendChild(makeBtn("btn-approve","Aprovar",u.email,"ap"));
     }
+    // Botao deletar sempre visivel
+    var bDel = document.createElement("button");
+    bDel.className = "btn-delete"; bDel.textContent = "Deletar";
+    bDel.addEventListener("click", function(){
+      if(confirm("Tem certeza que deseja deletar o usuario " + u.name + "?")) doDelete(u.email);
+    });
+    actDiv.appendChild(bDel);
   });
 }
 
@@ -265,6 +274,10 @@ function doApprove(email){
 function doReject(email){
   fetch(API+"/admin/reject/"+encodeURIComponent(email), {method:"POST",headers:{"x-session-token":tok}})
   .then(function(r){ if(r.ok){ toast("Rejeitado!"); loadUsers(); } });
+}
+function doDelete(email){
+  fetch(API+"/admin/users/"+encodeURIComponent(email), {method:"DELETE",headers:{"x-session-token":tok}})
+  .then(function(r){ if(r.ok){ toast("Usuario deletado!"); loadUsers(); } else { toast("Erro ao deletar!"); } });
 }
 
 function loadHist(){
