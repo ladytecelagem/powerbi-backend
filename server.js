@@ -19,18 +19,17 @@ const CONFIG = {
   adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
   resendApiKey:  process.env.RESEND_API_KEY || '',
   emailTo:       process.env.EMAIL_TO       || 'tecidos@ladytex.com.br',
-  emailFrom:     process.env.EMAIL_FROM     || 'noreply@ladybi.com.br',
+  emailFrom:     process.env.EMAIL_FROM     || 'onboarding@resend.dev',
 };
 
 const users = {};
 const sessions = {};
 const emailHistory = [];
+const resetTokens = {};
 
-// --- POWER BI ---
 async function getPbiToken() {
   const r = await fetch('https://login.microsoftonline.com/' + CONFIG.tenantId + '/oauth2/v2.0/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'client_credentials', client_id: CONFIG.clientId, client_secret: CONFIG.clientSecret, scope: 'https://analysis.windows.net/powerbi/api/.default' }).toString()
   });
   const d = await r.json();
@@ -38,7 +37,6 @@ async function getPbiToken() {
   return d.access_token;
 }
 
-// --- SESSAO ---
 function createSession(email) {
   const token = crypto.randomBytes(32).toString('hex');
   sessions[token] = email;
@@ -62,7 +60,7 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// --- AUTH ---
+// AUTH
 app.post('/auth/register', async (req, res) => {
   const { name, email, company, password } = req.body || {};
   if (!name || !email || !password) return res.status(400).json({ error: 'Nome, email e senha sao obrigatorios' });
@@ -98,7 +96,58 @@ app.get('/auth/me', (req, res) => {
   res.json({ name: user.name, email: user.email, status: user.status });
 });
 
-// --- ADMIN ---
+// ESQUECI A SENHA
+app.post('/auth/forgot-password', async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'Email obrigatorio' });
+  // Sempre retorna sucesso (nao revela se email existe)
+  const user = users[email];
+  if (user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    resetTokens[token] = { email, expires: Date.now() + 3600000 };
+    // Remove tokens antigos do mesmo email
+    Object.keys(resetTokens).forEach(function(t) {
+      if (resetTokens[t].email === email && t !== token) delete resetTokens[t];
+    });
+    const baseUrl = 'https://powerbi-backend-production.up.railway.app';
+    const resetUrl = baseUrl + '/reset-password.html?token=' + token;
+    console.log('[RESET] Token para:', email, '| URL:', resetUrl);
+    if (CONFIG.resendApiKey) {
+      try {
+        const resend = new Resend(CONFIG.resendApiKey);
+        await resend.emails.send({
+          from: 'LADY BI <' + CONFIG.emailFrom + '>',
+          to: [email],
+          subject: '[LADY BI] Redefinicao de senha',
+          html: '<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px">'
+            + '<div style="background:#1d1d1f;padding:18px 24px;border-radius:10px 10px 0 0"><h2 style="color:white;margin:0;font-size:17px">LADY BI - Redefinicao de Senha</h2></div>'
+            + '<div style="background:white;padding:24px;border:1px solid #eee;border-top:none;border-radius:0 0 10px 10px">'
+            + '<p style="font-size:14px;color:#444">Ola, <b>' + user.name + '</b>!</p>'
+            + '<p style="font-size:14px;color:#444;margin:12px 0">Clique no botao abaixo para redefinir sua senha:</p>'
+            + '<div style="text-align:center;margin:24px 0"><a href="' + resetUrl + '" style="background:#1d1d1f;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Redefinir Senha</a></div>'
+            + '<p style="font-size:12px;color:#999">Este link expira em 1 hora. Se nao foi voce, ignore este email.</p>'
+            + '</div></div>',
+        });
+      } catch(e) { console.error('[RESET] Erro email:', e.message); }
+    }
+  }
+  res.json({ ok: true, message: 'Se o email estiver cadastrado, voce recebera as instrucoes em breve.' });
+});
+
+app.post('/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body || {};
+  if (!token || !password) return res.status(400).json({ error: 'Dados invalidos' });
+  const entry = resetTokens[token];
+  if (!entry || entry.expires < Date.now()) return res.status(400).json({ error: 'Link invalido ou expirado. Solicite um novo.' });
+  const user = users[entry.email];
+  if (!user) return res.status(400).json({ error: 'Usuario nao encontrado' });
+  user.passwordHash = await bcrypt.hash(password, 10);
+  delete resetTokens[token];
+  console.log('[RESET] Senha redefinida:', entry.email);
+  res.json({ ok: true, message: 'Senha redefinida! Faca login com a nova senha.' });
+});
+
+// ADMIN
 app.post('/admin/login', async (req, res) => {
   const { password } = req.body || {};
   if (password !== CONFIG.adminPassword) return res.status(401).json({ error: 'Senha incorreta' });
@@ -120,11 +169,19 @@ app.post('/admin/reject/:email', requireAdmin, (req, res) => {
   user.status = 'rejected';
   res.json({ ok: true });
 });
+app.delete('/admin/users/:email', requireAdmin, (req, res) => {
+  const email = decodeURIComponent(req.params.email);
+  if (!users[email]) return res.status(404).json({ error: 'Usuario nao encontrado' });
+  delete users[email];
+  Object.keys(sessions).forEach(function(t) { if (sessions[t] === email) delete sessions[t]; });
+  console.log('[ADMIN] Usuario deletado:', email);
+  res.json({ ok: true });
+});
 app.get('/admin/email-history', requireAdmin, (req, res) => {
   res.json(emailHistory.slice().reverse());
 });
 
-// --- EMBED TOKEN ---
+// EMBED TOKEN
 app.get('/getEmbedToken', requireAuth, async (req, res) => {
   try {
     const t = await getPbiToken();
@@ -140,92 +197,46 @@ app.get('/getEmbedToken', requireAuth, async (req, res) => {
   } catch (err) { console.error('[PBI]', err.message); res.status(500).json({ error: err.message }); }
 });
 
-// --- ENVIO DE LISTA (via Resend) ---
+// ENVIO DE LISTA
 app.post('/send-list', requireAuth, async (req, res) => {
   const { pecas, obs, cliente, previsao } = req.body || {};
   const user = req.user;
   if (!pecas || !pecas.length) return res.status(400).json({ error: 'Nenhuma peca informada' });
-
   const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
   const htmlEmail = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
-    + '<div style="background:#1d1d1f;padding:20px 24px;border-radius:10px 10px 0 0">'
-    + '<h2 style="color:white;margin:0;font-size:18px">Consulta de Disponibilidade de Pecas</h2>'
-    + '<p style="color:#aaa;margin:6px 0 0;font-size:13px">Dashboard Comercial - LADY BI</p></div>'
-    + '<div style="background:#f8f8f8;padding:20px 24px;border:1px solid #eee;border-top:none">'
-    + '<table style="width:100%;border-collapse:collapse">'
+    + '<div style="background:#1d1d1f;padding:20px 24px;border-radius:10px 10px 0 0"><h2 style="color:white;margin:0;font-size:18px">Consulta de Disponibilidade de Pecas</h2><p style="color:#aaa;margin:6px 0 0;font-size:13px">Dashboard Comercial - LADY BI</p></div>'
+    + '<div style="background:#f8f8f8;padding:20px 24px;border:1px solid #eee;border-top:none"><table style="width:100%;border-collapse:collapse">'
     + '<tr><td style="padding:4px 0;color:#666;font-size:13px;width:110px">Data/Hora</td><td style="padding:4px 0;font-size:13px"><b>' + dataHora + '</b></td></tr>'
     + '<tr><td style="padding:4px 0;color:#666;font-size:13px">Solicitante</td><td style="padding:4px 0;font-size:13px">' + user.name + ' &lt;' + user.email + '&gt;</td></tr>'
     + (user.company ? '<tr><td style="padding:4px 0;color:#666;font-size:13px">Empresa</td><td style="padding:4px 0;font-size:13px">' + user.company + '</td></tr>' : '')
     + (cliente ? '<tr><td style="padding:4px 0;color:#666;font-size:13px">Cliente</td><td style="padding:4px 0;font-size:14px;font-weight:700;color:#1d1d1f">' + cliente + '</td></tr>' : '')
     + (previsao ? '<tr><td style="padding:4px 0;color:#666;font-size:13px">Previsao</td><td style="padding:4px 0;font-size:13px">' + previsao + '</td></tr>' : '')
     + '</table></div>'
-    + '<div style="background:white;padding:20px 24px;border:1px solid #eee;border-top:none">'
-    + '<h3 style="margin:0 0 14px;font-size:15px;color:#1d1d1f">Pecas Solicitadas (' + pecas.length + ')</h3>'
+    + '<div style="background:white;padding:20px 24px;border:1px solid #eee;border-top:none"><h3 style="margin:0 0 14px;font-size:15px;color:#1d1d1f">Pecas Solicitadas (' + pecas.length + ')</h3>'
     + '<table style="width:100%;border-collapse:collapse">'
-    + pecas.map(function(p, i) {
-        var bg = i % 2 === 0 ? '#f5f5f7' : 'white';
-        var code = p.code || p;
-        var nome = p.nome || '';
-        return '<tr style="background:' + bg + '">'
-          + '<td style="padding:8px 12px;color:#888;font-size:12px;width:28px">' + (i+1) + '</td>'
-          + '<td style="padding:8px 12px;font-family:monospace;font-size:14px;font-weight:700">' + code + '</td>'
-          + '<td style="padding:8px 12px;font-size:13px;color:#444">' + nome + '</td>'
-          + '</tr>';
-      }).join('')
+    + pecas.map(function(p, i) { var bg=i%2===0?'#f5f5f7':'white'; var code=p.code||p; var nome=p.nome||''; return '<tr style="background:'+bg+'"><td style="padding:8px 12px;color:#888;font-size:12px;width:28px">'+(i+1)+'</td><td style="padding:8px 12px;font-family:monospace;font-size:14px;font-weight:700">'+code+'</td><td style="padding:8px 12px;font-size:13px;color:#444">'+nome+'</td></tr>'; }).join('')
     + '</table>'
-    + (obs ? '<div style="margin-top:14px;padding:12px;background:#fff8e6;border-radius:8px;border-left:4px solid #f0a500"><b style="font-size:13px">Observacoes:</b><p style="margin:4px 0 0;font-size:13px">' + obs + '</p></div>' : '')
-    + '</div>'
-    + '<div style="padding:12px 24px;background:#f0f0f0;border-radius:0 0 10px 10px;font-size:11px;color:#888;text-align:center">Enviado automaticamente pelo Dashboard Comercial LADY BI</div>'
-    + '</div>';
-
-  const registro = {
-    id: Date.now(),
-    dataHora, solicitante: user.name, email: user.email,
-    empresa: user.company || '', cliente: cliente || '',
-    previsao: previsao || '', pecas: pecas.map(function(p){ return p.code || p; }),
-    obs: obs || '', status: 'pendente'
-  };
-
+    + (obs ? '<div style="margin-top:14px;padding:12px;background:#fff8e6;border-radius:8px;border-left:4px solid #f0a500"><b style="font-size:13px">Observacoes:</b><p style="margin:4px 0 0;font-size:13px">'+obs+'</p></div>' : '')
+    + '</div><div style="padding:12px 24px;background:#f0f0f0;border-radius:0 0 10px 10px;font-size:11px;color:#888;text-align:center">Enviado automaticamente pelo Dashboard Comercial LADY BI</div></div>';
+  const registro = { id: Date.now(), dataHora, solicitante: user.name, email: user.email, empresa: user.company||'', cliente: cliente||'', previsao: previsao||'', pecas: pecas.map(function(p){return p.code||p;}), obs: obs||'', status: 'pendente' };
   try {
     if (!CONFIG.resendApiKey) {
-      registro.status = 'simulado';
-      emailHistory.push(registro);
-      console.log('[MAIL] RESEND_API_KEY nao configurada. Simulando envio.');
-      return res.json({ ok: true, message: 'Lista registrada! (configure RESEND_API_KEY para envio real)' });
+      registro.status = 'simulado'; emailHistory.push(registro);
+      return res.json({ ok: true, message: 'Lista registrada!' });
     }
-
     const resend = new Resend(CONFIG.resendApiKey);
-    const assunto = '[LADY BI] Consulta de Pecas - ' + (cliente || user.name) + ' (' + pecas.length + ' itens)';
-
     const { error } = await resend.emails.send({
       from: 'LADY BI Dashboard <' + CONFIG.emailFrom + '>',
-      to: [CONFIG.emailTo],
-      reply_to: user.email,
-      subject: assunto,
+      to: [CONFIG.emailTo], reply_to: user.email,
+      subject: '[LADY BI] Consulta de Pecas - ' + (cliente||user.name) + ' (' + pecas.length + ' itens)',
       html: htmlEmail,
     });
-
-    if (error) {
-      registro.status = 'erro: ' + JSON.stringify(error);
-      emailHistory.push(registro);
-      console.error('[MAIL] Resend erro:', error);
-      return res.status(500).json({ error: 'Erro ao enviar: ' + JSON.stringify(error) });
-    }
-
-    registro.status = 'enviado';
-    emailHistory.push(registro);
-    console.log('[MAIL] Enviado via Resend para', CONFIG.emailTo, '- pecas:', pecas.length);
+    if (error) { registro.status='erro: '+JSON.stringify(error); emailHistory.push(registro); return res.status(500).json({ error: 'Erro: '+JSON.stringify(error) }); }
+    registro.status = 'enviado'; emailHistory.push(registro);
     res.json({ ok: true, message: 'Lista enviada com sucesso para a expedicao!' });
-  } catch (err) {
-    registro.status = 'erro: ' + err.message;
-    emailHistory.push(registro);
-    console.error('[MAIL] Erro:', err.message);
-    res.status(500).json({ error: 'Erro: ' + err.message });
-  }
+  } catch (err) { registro.status='erro: '+err.message; emailHistory.push(registro); res.status(500).json({ error: err.message }); }
 });
 
 app.get('/health', (req, res) => res.json({ ok: true }));
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log('OK porta ' + PORT));
