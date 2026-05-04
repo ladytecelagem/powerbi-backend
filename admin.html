@@ -75,6 +75,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f0f2f5;
 .sok{color:#006600;font-weight:600}
 .ssim{color:#cc7700}
 .serr{color:#cc0000;font-size:11px}
+.ufocco{font-size:11px;color:#1d1d1f;margin-top:2px;font-weight:500}
+.ufocco-empty{color:#bbb;font-style:italic}
+.focco-row{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)}
+.focco-input{flex:1;padding:6px 10px;border:1px solid rgba(0,0,0,.15);border-radius:8px;font-size:12px;outline:none}
+.focco-input:focus{border-color:#1d1d1f}
+.btn-focco{background:#1d1d1f;color:white;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap}
+.btn-focco:hover{opacity:.85}
 .empty{text-align:center;padding:40px;color:#aaa;font-size:15px}
 .ltxt{text-align:center;padding:40px;color:#aaa}
 .htopbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -232,7 +239,8 @@ function renderUsers(){
     var avCls = {pending:"avp",approved:"ava",rejected:"avr"}[u.status]||"avp";
     var dt = new Date(u.createdAt).toLocaleString("pt-BR");
     var infoHtml = "<div class='un'>"+u.name+"</div><div class='ue'>"+u.email+"</div>"
-      +(u.company?"<div class='uco'>"+u.company+"</div>":"")+"<div class='ud'>Cadastrado em "+dt+"</div>";
+      +(u.company?"<div class='uco'>"+u.company+"</div>":"")+"<div class='ud'>Cadastrado em "+dt+"</div>"
+    +(u.foccoRepCode?"<div class='ufocco'>Cód. Focco: "+u.foccoRepCode+"</div>":"<div class='ufocco ufocco-empty'>Cód. Focco não definido</div>");
     card.innerHTML = "<div class='uav "+avCls+"'>"+ ini +"</div><div class='uinfo'>"+infoHtml+"</div><div class='uact' id='act-"+encodeURIComponent(u.email)+"'></div>";
     el.appendChild(card);
     var actDiv = card.querySelector(".uact");
@@ -298,10 +306,10 @@ function loadHist(){
       h += "<tr>"
         +"<td style='white-space:nowrap;color:#888;font-size:12px'>"+(r.dataHora||"")+"</td>"
         +"<td><b>"+(r.solicitante||"")+"</b><div style='color:#aaa;font-size:11px'>"+(r.email||"")+"</div></td>"
-        +"<td>"+(r.cliente||"—")+"</td>"
-        +"<td style='font-size:12px'>"+(r.previsao||"—")+"</td>"
+        +"<td>"+(r.cliente||"â")+"</td>"
+        +"<td style='font-size:12px'>"+(r.previsao||"â")+"</td>"
         +"<td><div class='pwrap'>"+pt+"</div></td>"
-        +"<td style='font-size:12px;max-width:140px'>"+(r.obs||"—")+"</td>"
+        +"<td style='font-size:12px;max-width:140px'>"+(r.obs||"â")+"</td>"
         +"<td class='"+sc+"'>"+ sl +"</td></tr>";
     });
     h += "</tbody></table>";
